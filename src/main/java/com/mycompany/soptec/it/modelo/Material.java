@@ -1,13 +1,13 @@
 
 package com.mycompany.soptec.it.modelo;
 public class Material {
-    private id idMaterial;
+    private  int idMaterial;
     private String codigo;
     private String nombre;
     private double precioUnitario;
     private int stockActual;
 
-    public Material(id idMaterial, String codigo, String nombre, double precioUnitario, int stockActual) {
+    public Material(int idMaterial, String codigo, String nombre, double precioUnitario, int stockActual) {
         this.idMaterial = idMaterial;
         this.codigo = codigo;
         this.nombre = nombre;
@@ -22,7 +22,7 @@ public class Material {
         return cantidad * precioUnitario;
     }
     public String obtenerDetalles(){
-        reutrn nombre + " ("+ codigo + ") - $"+ precioUnitario;
+        return nombre + " ("+ codigo + ") - $"+ precioUnitario;
     }
 
     public double getPrecioUnitario() {
