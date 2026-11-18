@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox spacing="16.0" style="-fx-padding: 18;" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.soptec.it.controlador.TelefonosClienteController">
+
+    <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="Teléfonos por Cliente" styleClass="section-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <CheckBox fx:id="chkIncluirInactivos" text="Mostrar inactivos" onAction="#cargarTabla" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <TextField fx:id="txtBuscar" promptText="Buscar por teléfono, cliente o RFC..." HBox.hgrow="ALWAYS" />
+            <Button text="Buscar" onAction="#buscar" styleClass="btn-primary" />
+            <Button text="Refrescar" onAction="#cargarTabla" styleClass="btn-secondary" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <Button text="Consultar clave seleccionada" onAction="#consultarSeleccionado" styleClass="btn-secondary" />
+            <Button text="Filtrar del cliente seleccionado en combo" onAction="#filtrarPorClienteCombo" styleClass="btn-secondary" />
+        </HBox>
+
+        <TableView fx:id="tblTelefonos" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colCliente" text="Cliente (Nombre y RFC)" prefWidth="280.0" />
+                <TableColumn fx:id="colTelefono" text="Teléfono" prefWidth="180.0" />
+                <TableColumn fx:id="colEstadoReg" text="Estado" prefWidth="100.0" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <VBox prefWidth="420.0" spacing="12.0" styleClass="card">
+        <Label text="Formulario Teléfono - Cliente" styleClass="section-title" />
+        <Label text="Selecciona el cliente desde el buscador descriptivo (sin capturar IDs manuales)." wrapText="true" styleClass="hint-label" />
+
+        <GridPane hgap="10.0" vgap="10.0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35.0" />
+                <ColumnConstraints percentWidth="65.0" />
+            </columnConstraints>
+
+            <Label text="Filtrar cliente" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+            <TextField fx:id="txtFiltroCliente" promptText="Escribe nombre o RFC..." GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+            <Label text="Cliente *" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+            <ComboBox fx:id="cmbCliente" maxWidth="Infinity" promptText="Selecciona un cliente activo" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+            <Label text="Teléfono *" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+            <TextField fx:id="txtTelefono" promptText="Ej. 3312345678" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+        </GridPane>
+
+        <Region VBox.vgrow="ALWAYS" />
+
+        <HBox spacing="8.0">
+            <Button text="Nuevo / Limpiar" onAction="#limpiar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Guardar" onAction="#guardar" styleClass="btn-success" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Actualizar" onAction="#actualizar" styleClass="btn-primary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+
+        <HBox spacing="8.0">
+            <Button text="Desactivar (Lógico)" onAction="#desactivar" styleClass="btn-warning" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Reactivar" onAction="#reactivar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Eliminar Físico" onAction="#eliminarFisico" styleClass="btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+    </VBox>
+</HBox>

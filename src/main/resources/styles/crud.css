@@ -1,0 +1,213 @@
+/* =====================================================================
+   SOPTEC-IT | Estilos para Modulos CRUD Base
+   ===================================================================== */
+
+.root {
+    -c-navy: #172941;
+    -c-navy-2: #1E3352;
+    -c-primario: #3188B3;
+    -c-primario-osc: #156082;
+    -c-primario-suave: #E6F1F7;
+    -c-naranja: #F08328;
+    -c-verde: #54B359;
+    -c-verde-osc: #3F9A45;
+    -c-rojo: #E04F4F;
+    -c-rojo-osc: #C53A3A;
+    -c-fondo: #F2F5F9;
+    -c-tarjeta: #FFFFFF;
+    -c-borde: #DCE3EC;
+    -c-texto: #1C2B3F;
+    -c-tenue: #68778C;
+
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: -c-texto;
+    -fx-background-color: -c-fondo;
+}
+
+.sidebar {
+    -fx-background-color: -c-navy;
+    -fx-padding: 18 12 18 12;
+}
+
+.brand-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.brand-sub {
+    -fx-text-fill: #9FB2C9;
+    -fx-font-size: 11px;
+}
+
+.sidebar-section {
+    -fx-text-fill: #7C92B0;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 0 4 8;
+}
+
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-text-fill: #D5E0EE;
+    -fx-font-size: 13px;
+    -fx-alignment: center-left;
+    -fx-padding: 9 12 9 12;
+    -fx-cursor: hand;
+}
+
+.nav-btn:hover {
+    -fx-background-color: -c-navy-2;
+    -fx-text-fill: white;
+}
+
+.nav-btn:selected {
+    -fx-background-color: -c-primario;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.topbar {
+    -fx-background-color: -c-tarjeta;
+    -fx-border-color: transparent transparent -c-borde transparent;
+    -fx-border-width: 1;
+    -fx-padding: 12 20 12 20;
+}
+
+.topbar-title {
+    -fx-text-fill: -c-navy;
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+}
+
+.topbar-sub {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 12px;
+}
+
+.badge-ok {
+    -fx-background-color: #E7F5E8;
+    -fx-text-fill: #2A7B2E;
+    -fx-background-radius: 14;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.badge-error {
+    -fx-background-color: #FBE7E7;
+    -fx-text-fill: #B83232;
+    -fx-background-radius: 14;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.card {
+    -fx-background-color: -c-tarjeta;
+    -fx-background-radius: 10;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 10;
+    -fx-padding: 14;
+}
+
+.section-title {
+    -fx-text-fill: -c-navy;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.field-label {
+    -fx-text-fill: -c-texto;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.hint-label {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 11px;
+}
+
+.text-field, .text-area, .combo-box, .date-picker {
+    -fx-background-color: white;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.text-field:focused, .text-area:focused, .combo-box:focused, .date-picker:focused {
+    -fx-border-color: -c-primario;
+}
+
+.btn-primary {
+    -fx-background-color: -c-primario;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 7;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+.btn-primary:hover { -fx-background-color: -c-primario-osc; }
+
+.btn-success {
+    -fx-background-color: -c-verde;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 7;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+.btn-success:hover { -fx-background-color: -c-verde-osc; }
+
+.btn-warning {
+    -fx-background-color: -c-naranja;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 7;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+.btn-warning:hover { -fx-background-color: #D96E18; }
+
+.btn-danger {
+    -fx-background-color: -c-rojo;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 7;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+.btn-danger:hover { -fx-background-color: -c-rojo-osc; }
+
+.btn-secondary {
+    -fx-background-color: #E8EEF5;
+    -fx-text-fill: -c-navy;
+    -fx-font-weight: bold;
+    -fx-background-radius: 7;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+.btn-secondary:hover { -fx-background-color: #D7E1ED; }
+
+.image-box {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-border-style: dashed;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.table-view .column-header {
+    -fx-background-color: #F1F5F9;
+    -fx-font-weight: bold;
+    -fx-text-fill: -c-navy;
+}

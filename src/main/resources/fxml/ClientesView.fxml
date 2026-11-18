@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox spacing="16.0" style="-fx-padding: 18;" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.soptec.it.controlador.ClientesController">
+
+    <!-- Panel izquierdo: Busqueda, consulta por ID y tabla -->
+    <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="Listado de Clientes" styleClass="section-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <CheckBox fx:id="chkIncluirInactivos" text="Mostrar inactivos" onAction="#cargarTabla" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <TextField fx:id="txtBuscar" promptText="Buscar por nombre, RFC, correo o colonia..." HBox.hgrow="ALWAYS" />
+            <Button text="Buscar" onAction="#buscar" styleClass="btn-primary" />
+            <Button text="Refrescar" onAction="#cargarTabla" styleClass="btn-secondary" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <Label text="Consultar por ID:" styleClass="field-label" />
+            <TextField fx:id="txtConsultarId" prefWidth="110.0" promptText="Ej. 1" />
+            <Button text="Mostrar por ID" onAction="#consultarPorId" styleClass="btn-secondary" />
+        </HBox>
+
+        <TableView fx:id="tblClientes" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="55.0" />
+                <TableColumn fx:id="colRfc" text="RFC" prefWidth="125.0" />
+                <TableColumn fx:id="colNombre" text="Nombre / Razón Social" prefWidth="180.0" />
+                <TableColumn fx:id="colCorreo" text="Correo" prefWidth="170.0" />
+                <TableColumn fx:id="colDireccion" text="Dirección" prefWidth="180.0" />
+                <TableColumn fx:id="colEstadoReg" text="Estado" prefWidth="85.0" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Panel derecho: Formulario CRUD + Imagen + Transaccion -->
+    <VBox prefWidth="420.0" spacing="12.0" styleClass="card">
+        <Label fx:id="lblModoFormulario" text="Registro de Cliente" styleClass="section-title" />
+
+        <GridPane hgap="10.0" vgap="8.0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35.0" />
+                <ColumnConstraints percentWidth="65.0" />
+            </columnConstraints>
+
+            <Label text="RFC *" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+            <TextField fx:id="txtRfc" promptText="Ej. XAXX010101000" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+            <Label text="Nombre *" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+            <TextField fx:id="txtNombre" promptText="Nombre completo o empresa" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+            <Label text="Correo *" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+            <TextField fx:id="txtCorreo" promptText="correo@ejemplo.com" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+            <Label text="Calle" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+            <TextField fx:id="txtCalle" promptText="Opcional" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+            <Label text="Número" styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+            <TextField fx:id="txtNumero" promptText="Opcional" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+
+            <Label text="Colonia" styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+            <TextField fx:id="txtColonia" promptText="Opcional" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+
+            <Label text="Entidad/Estado" styleClass="field-label" GridPane.rowIndex="6" GridPane.columnIndex="0" />
+            <TextField fx:id="txtEstadoGeo" promptText="Ej. Jalisco" GridPane.rowIndex="6" GridPane.columnIndex="1" />
+
+            <Label text="Teléfono inicial" styleClass="field-label" GridPane.rowIndex="7" GridPane.columnIndex="0" />
+            <TextField fx:id="txtTelefonoInicial" promptText="Opcional (transacción alta)" GridPane.rowIndex="7" GridPane.columnIndex="1" />
+        </GridPane>
+
+        <HBox spacing="12.0" alignment="CENTER_LEFT">
+            <StackPane prefWidth="96.0" prefHeight="96.0" styleClass="image-box">
+                <ImageView fx:id="imgCliente" fitWidth="90.0" fitHeight="90.0" preserveRatio="true" />
+            </StackPane>
+            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                <Label text="Imagen del cliente" styleClass="field-label" />
+                <Label fx:id="lblRutaImagen" text="Sin imagen seleccionada" wrapText="true" styleClass="hint-label" />
+                <HBox spacing="8.0">
+                    <Button text="Elegir imagen" onAction="#seleccionarImagen" styleClass="btn-secondary" />
+                    <Button text="Quitar" onAction="#quitarImagen" styleClass="btn-secondary" />
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="8.0">
+            <Button text="Nuevo / Limpiar" onAction="#limpiar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Guardar" onAction="#guardar" styleClass="btn-success" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Actualizar" onAction="#actualizar" styleClass="btn-primary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+
+        <HBox spacing="8.0">
+            <Button text="Desactivar (Lógico)" onAction="#desactivar" styleClass="btn-warning" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Reactivar" onAction="#reactivar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Eliminar Físico" onAction="#eliminarFisico" styleClass="btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+    </VBox>
+</HBox>

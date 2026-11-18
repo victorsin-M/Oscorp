@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox spacing="16.0" style="-fx-padding: 18;" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.soptec.it.controlador.CitasController">
+
+    <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="Agenda de Citas" styleClass="section-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <CheckBox fx:id="chkIncluirInactivos" text="Mostrar inactivos" onAction="#cargarTabla" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <TextField fx:id="txtBuscar" promptText="Buscar por cliente, RFC, estado u observaciones..." HBox.hgrow="ALWAYS" />
+            <Button text="Buscar" onAction="#buscar" styleClass="btn-primary" />
+            <Button text="Refrescar" onAction="#cargarTabla" styleClass="btn-secondary" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <Label text="Consultar por ID:" styleClass="field-label" />
+            <TextField fx:id="txtConsultarId" prefWidth="110.0" promptText="Ej. 1" />
+            <Button text="Mostrar por ID" onAction="#consultarPorId" styleClass="btn-secondary" />
+        </HBox>
+
+        <TableView fx:id="tblCitas" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="50.0" />
+                <TableColumn fx:id="colFecha" text="Fecha" prefWidth="100.0" />
+                <TableColumn fx:id="colHora" text="Hora" prefWidth="75.0" />
+                <TableColumn fx:id="colCliente" text="Cliente (Nombre y RFC)" prefWidth="210.0" />
+                <TableColumn fx:id="colEstadoCita" text="Estado Cita" prefWidth="110.0" />
+                <TableColumn fx:id="colObs" text="Observaciones" prefWidth="190.0" />
+                <TableColumn fx:id="colActivo" text="Registro" prefWidth="75.0" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <VBox prefWidth="430.0" spacing="12.0" styleClass="card">
+        <Label fx:id="lblModoFormulario" text="Registro de Cita" styleClass="section-title" />
+        <Label text="Selecciona el cliente mediante el buscador descriptivo." wrapText="true" styleClass="hint-label" />
+
+        <GridPane hgap="10.0" vgap="8.0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35.0" />
+                <ColumnConstraints percentWidth="65.0" />
+            </columnConstraints>
+
+            <Label text="Filtrar cliente" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+            <TextField fx:id="txtFiltroCliente" promptText="Buscar cliente por nombre o RFC..." GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+            <Label text="Cliente *" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+            <ComboBox fx:id="cmbCliente" maxWidth="Infinity" promptText="Selecciona un cliente activo" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+            <Label text="Fecha cita *" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+            <DatePicker fx:id="dpFechaCita" maxWidth="Infinity" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+            <Label text="Hora cita *" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+            <ComboBox fx:id="cmbHora" editable="true" maxWidth="Infinity" promptText="Ej. 09:30" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+            <Label text="Estado cita *" styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+            <ComboBox fx:id="cmbEstadoCita" maxWidth="Infinity" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+
+            <Label text="Observaciones" styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+            <TextArea fx:id="txtObservaciones" prefRowCount="4" promptText="Motivo de la cita, contacto o notas..." GridPane.rowIndex="5" GridPane.columnIndex="1" />
+        </GridPane>
+
+        <Region VBox.vgrow="ALWAYS" />
+
+        <HBox spacing="8.0">
+            <Button text="Nuevo / Limpiar" onAction="#limpiar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Guardar" onAction="#guardar" styleClass="btn-success" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Actualizar" onAction="#actualizar" styleClass="btn-primary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+
+        <HBox spacing="8.0">
+            <Button text="Desactivar (Lógico)" onAction="#desactivar" styleClass="btn-warning" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Reactivar" onAction="#reactivar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Eliminar Físico" onAction="#eliminarFisico" styleClass="btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+    </VBox>
+</HBox>

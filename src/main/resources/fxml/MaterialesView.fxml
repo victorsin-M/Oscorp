@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox spacing="16.0" style="-fx-padding: 18;" xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.mycompany.soptec.it.controlador.MaterialesController">
+
+    <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="Catálogo de Materiales" styleClass="section-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <CheckBox fx:id="chkIncluirInactivos" text="Mostrar inactivos" onAction="#cargarTabla" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <TextField fx:id="txtBuscar" promptText="Buscar material por descripción..." HBox.hgrow="ALWAYS" />
+            <Button text="Buscar" onAction="#buscar" styleClass="btn-primary" />
+            <Button text="Refrescar" onAction="#cargarTabla" styleClass="btn-secondary" />
+        </HBox>
+
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <Label text="Consultar por ID:" styleClass="field-label" />
+            <TextField fx:id="txtConsultarId" prefWidth="110.0" promptText="Ej. 1" />
+            <Button text="Mostrar por ID" onAction="#consultarPorId" styleClass="btn-secondary" />
+        </HBox>
+
+        <TableView fx:id="tblMateriales" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="55.0" />
+                <TableColumn fx:id="colDescripcion" text="Descripción del Material" prefWidth="300.0" />
+                <TableColumn fx:id="colPrecio" text="Precio Costo" prefWidth="120.0" />
+                <TableColumn fx:id="colExistencias" text="Existencias" prefWidth="100.0" />
+                <TableColumn fx:id="colEstadoReg" text="Estado" prefWidth="90.0" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <VBox prefWidth="420.0" spacing="12.0" styleClass="card">
+        <Label fx:id="lblModoFormulario" text="Registro de Material" styleClass="section-title" />
+
+        <GridPane hgap="10.0" vgap="10.0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="35.0" />
+                <ColumnConstraints percentWidth="65.0" />
+            </columnConstraints>
+
+            <Label text="Descripción *" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+            <TextField fx:id="txtDescripcion" promptText="Ej. Cable UTP Cat6 bobina 305m" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+            <Label text="Precio costo *" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+            <TextField fx:id="txtPrecio" promptText="Ej. 2850.00" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+            <Label text="Existencias *" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+            <TextField fx:id="txtExistencias" promptText="Ej. 15" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+        </GridPane>
+
+        <Region VBox.vgrow="ALWAYS" />
+
+        <HBox spacing="8.0">
+            <Button text="Nuevo / Limpiar" onAction="#limpiar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Guardar" onAction="#guardar" styleClass="btn-success" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Actualizar" onAction="#actualizar" styleClass="btn-primary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+
+        <HBox spacing="8.0">
+            <Button text="Desactivar (Lógico)" onAction="#desactivar" styleClass="btn-warning" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Reactivar" onAction="#reactivar" styleClass="btn-secondary" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+            <Button text="Eliminar Físico" onAction="#eliminarFisico" styleClass="btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        </HBox>
+    </VBox>
+</HBox>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="780.0" prefWidth="1280.0" stylesheets="@../styles/crud.css"
+            xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mycompany.soptec.it.controlador.MainCrudController">
+    <left>
+        <VBox prefWidth="240.0" spacing="4.0" styleClass="sidebar">
+            <fx:define>
+                <ToggleGroup fx:id="grupoMenu" />
+            </fx:define>
+            <Label text="SOPTEC-IT" styleClass="brand-title" />
+            <Label text="CRUD Tablas Base · Act. 4.6" styleClass="brand-sub" />
+
+            <Label text="ENTIDADES BASE" styleClass="sidebar-section" />
+            <ToggleButton fx:id="btnClientes" text="1. Clientes" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="ClientesView" onAction="#navegar" styleClass="nav-btn" selected="true" />
+            <ToggleButton fx:id="btnTelefonos" text="2. Teléfonos Cliente" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="TelefonosClienteView" onAction="#navegar" styleClass="nav-btn" />
+            <ToggleButton fx:id="btnEmpleados" text="3. Empleados" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="EmpleadosView" onAction="#navegar" styleClass="nav-btn" />
+            <ToggleButton fx:id="btnMateriales" text="4. Materiales" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="MaterialesView" onAction="#navegar" styleClass="nav-btn" />
+            <ToggleButton fx:id="btnProveedores" text="5. Proveedores" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="ProveedoresView" onAction="#navegar" styleClass="nav-btn" />
+            <ToggleButton fx:id="btnProyectos" text="6. Proyectos" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="ProyectosView" onAction="#navegar" styleClass="nav-btn" />
+            <ToggleButton fx:id="btnCitas" text="7. Citas" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="CitasView" onAction="#navegar" styleClass="nav-btn" />
+            <ToggleButton fx:id="btnLevantamientos" text="8. Levantamientos" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="LevantamientosView" onAction="#navegar" styleClass="nav-btn" />
+
+            <Label text="SOPORTE Y TOLERANCIA A FALLOS" styleClass="sidebar-section" />
+            <ToggleButton fx:id="btnLogs" text="Logs y Pruebas de Error" maxWidth="Infinity" toggleGroup="$grupoMenu" userData="LogsPruebasView" onAction="#navegar" styleClass="nav-btn" />
+
+            <Region VBox.vgrow="ALWAYS" />
+            <Button text="Verificar Conexión BD" maxWidth="Infinity" onAction="#verificarConexion" styleClass="btn-secondary" />
+        </VBox>
+    </left>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="topbar">
+            <VBox spacing="2.0">
+                <Label fx:id="lblTituloModulo" text="Clientes" styleClass="topbar-title" />
+                <Label fx:id="lblSubtituloModulo" text="Gestión de clientes, direcciones, imágenes y alta transaccional" styleClass="topbar-sub" />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblEstadoConexion" text="Verificando MySQL..." styleClass="badge-ok" />
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fx:id="contenedorModulo" fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent;">
+        </ScrollPane>
+    </center>
+</BorderPane>
