@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- ================= INICIO / PANEL GENERAL ================= -->
+<VBox prefHeight="700.0" prefWidth="1072.0" spacing="20.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.InicioController">
+   <children>
+
+      <!-- Bienvenida -->
+      <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="bienvenida">
+         <children>
+            <VBox spacing="4.0">
+               <children>
+                  <Label fx:id="lblSaludo" styleClass="bienvenida-titulo" text="¡Buen día!" />
+                  <Label styleClass="bienvenida-texto" text="Resumen en tiempo real de la operación de SOPTEC-IT conectado a MySQL." />
+               </children>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnRefrescar" mnemonicParsing="false" onAction="#refrescarPanel" styleClass="boton-secundario" text="Actualizar" />
+            <Button fx:id="btnNuevaCita" mnemonicParsing="false" onAction="#irACitas" styleClass="boton-naranja" text="Agendar cita">
+               <graphic>
+                  <SVGPath content="M12 5 V19 M5 12 H19" styleClass="icono-boton" />
+               </graphic>
+            </Button>
+            <Button fx:id="btnSeguimiento" mnemonicParsing="false" onAction="#irASeguimiento" styleClass="boton-primario" text="Consultar avance" />
+         </children>
+      </HBox>
+
+      <!-- Indicadores -->
+      <HBox spacing="18.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-azul" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="46.0" styleClass="kpi-icono-fondo" width="46.0" />
+                        <SVGPath content="M9 3 H15 V8 H9 Z M3 16 H9 V21 H3 Z M15 16 H21 V21 H15 Z M12 8 V12 M6 16 V12 H18 V16" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblProyectosActivos" styleClass="kpi-valor" text="0" />
+                        <Label styleClass="kpi-etiqueta" text="Proyectos activos" />
+                        <Label fx:id="lblProyectosSub" styleClass="kpi-tendencia-ok" text="En base de datos" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-naranja" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="46.0" styleClass="kpi-icono-fondo" width="46.0" />
+                        <SVGPath content="M4 6 H20 V20.5 H4 Z M4 10 H20 M8.5 3.5 V7.5 M15.5 3.5 V7.5" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblCitasHoy" styleClass="kpi-valor" text="0" />
+                        <Label styleClass="kpi-etiqueta" text="Citas activas" />
+                        <Label fx:id="lblCitasSub" styleClass="kpi-tendencia-ok" text="Agenda actualizada" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-verde" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="46.0" styleClass="kpi-icono-fondo" width="46.0" />
+                        <SVGPath content="M6 3 H14 L19 8 V21 H6 Z M14 3 V8 H19 M9 13 H16 M9 17 H14" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblPorCobrar" styleClass="kpi-valor" text="\$0.00" />
+                        <Label styleClass="kpi-etiqueta" text="Monto en proyectos" />
+                        <Label fx:id="lblClientesSub" styleClass="kpi-tendencia-ok" text="0 clientes activos" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-rojo" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="46.0" styleClass="kpi-icono-fondo" width="46.0" />
+                        <SVGPath content="M3.5 7.5 L12 3.5 L20.5 7.5 V16.5 L12 20.5 L3.5 16.5 Z M3.5 7.5 L12 11.5 L20.5 7.5 M12 11.5 V20.5" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblBajoStock" styleClass="kpi-valor" text="0" />
+                        <Label styleClass="kpi-etiqueta" text="Materiales bajo stock" />
+                        <Label styleClass="kpi-tendencia-mal" text="Existencia ≤ 10 unidades" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+
+      <!-- Proyectos + panel derecho -->
+      <HBox spacing="20.0" VBox.vgrow="ALWAYS">
+         <children>
+            <VBox spacing="14.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+               <children>
+                  <HBox alignment="CENTER_LEFT">
+                     <children>
+                        <VBox>
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Proyectos registrados" />
+                              <Label styleClass="tarjeta-subtitulo" text="Doble clic en un proyecto para ver su seguimiento detallado" />
+                           </children>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Hyperlink onAction="#irASeguimiento" styleClass="enlace" text="Ver seguimiento →" />
+                     </children>
+                  </HBox>
+                  <TableView fx:id="tblProyectos" minHeight="240.0" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn prefWidth="70.0" text="ID" />
+                        <TableColumn prefWidth="150.0" text="Cliente" />
+                        <TableColumn prefWidth="160.0" text="Proyecto" />
+                        <TableColumn prefWidth="105.0" text="Costo total" />
+                        <TableColumn prefWidth="120.0" styleClass="col-avance" text="Avance" />
+                        <TableColumn prefWidth="105.0" styleClass="col-estado" text="Estado" />
+                     </columns>
+                     <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                  </TableView>
+               </children>
+            </VBox>
+
+            <VBox minWidth="320.0" prefWidth="330.0" spacing="20.0">
+               <children>
+                  <!-- Próximas citas -->
+                  <VBox spacing="10.0" styleClass="tarjeta">
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Próximas citas" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Hyperlink onAction="#irACitas" styleClass="enlace" text="Agenda" />
+                           </children>
+                        </HBox>
+                        <VBox fx:id="listaCitas" spacing="8.0" />
+                     </children>
+                  </VBox>
+
+                  <!-- Alertas de material -->
+                  <VBox spacing="10.0" styleClass="tarjeta" VBox.vgrow="ALWAYS">
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Alertas de material" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Hyperlink onAction="#irACompras" styleClass="enlace" text="Almacén" />
+                           </children>
+                        </HBox>
+                        <VBox fx:id="listaAlertas" spacing="8.0" />
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</VBox>

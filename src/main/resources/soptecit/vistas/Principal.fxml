@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- ============ VENTANA PRINCIPAL (menú lateral + barra superior + contenido) ============ -->
+<BorderPane prefHeight="780.0" prefWidth="1320.0" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.PrincipalController">
+   <fx:define>
+      <ToggleGroup fx:id="grupoMenu" />
+   </fx:define>
+
+   <!-- ===================== BARRA LATERAL ===================== -->
+   <left>
+      <VBox minWidth="248.0" prefWidth="248.0" spacing="3.0" styleClass="sidebar">
+         <children>
+            <ImageView fitWidth="210.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/logo.png" />
+               </image>
+               <VBox.margin>
+                  <Insets bottom="10.0" left="4.0" top="4.0" />
+               </VBox.margin>
+            </ImageView>
+
+            <Label styleClass="sidebar-seccion" text="GENERAL" />
+            <ToggleButton fx:id="btnInicio" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" selected="true" styleClass="nav-boton" text="Inicio" toggleGroup="$grupoMenu" userData="Inicio">
+               <graphic>
+                  <SVGPath content="M3 10.5 L12 3.5 L21 10.5 M5.5 9 V20.5 H18.5 V9 M10 20.5 V14.5 H14 V20.5" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="btnSeguimiento" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Seguimiento de proyectos" toggleGroup="$grupoMenu" userData="Seguimiento">
+               <graphic>
+                  <SVGPath content="M3 12 H7 L10 5 L14 19 L17 12 H21" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+
+            <Label styleClass="sidebar-seccion" text="ÁREAS" />
+            <ToggleButton fx:id="btnVentas" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Ventas" toggleGroup="$grupoMenu" userData="Ventas">
+               <graphic>
+                  <SVGPath content="M5 8 H19 L18 20.5 H6 Z M9 8 V6.5 A3 3 0 0 1 15 6.5 V8" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="btnCitas" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Citas" toggleGroup="$grupoMenu" userData="Citas">
+               <graphic>
+                  <SVGPath content="M4 6 H20 V20.5 H4 Z M4 10 H20 M8.5 3.5 V7.5 M15.5 3.5 V7.5" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="btnLevantamientos" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Levantamientos" toggleGroup="$grupoMenu" userData="Levantamientos">
+               <graphic>
+                  <SVGPath content="M12 21 C12 21 5 14.5 5 9.5 A7 7 0 0 1 19 9.5 C19 14.5 12 21 12 21 Z M10 9.5 A2 2 0 1 0 14 9.5 A2 2 0 1 0 10 9.5 Z" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="btnAdministracion" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Administración" toggleGroup="$grupoMenu" userData="Administracion">
+               <graphic>
+                  <SVGPath content="M6 3 H14 L19 8 V21 H6 Z M14 3 V8 H19 M9 13 H16 M9 17 H14" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="btnCompras" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Compras-Almacén" toggleGroup="$grupoMenu" userData="ComprasAlmacen">
+               <graphic>
+                  <SVGPath content="M3.5 7.5 L12 3.5 L20.5 7.5 V16.5 L12 20.5 L3.5 16.5 Z M3.5 7.5 L12 11.5 L20.5 7.5 M12 11.5 V20.5" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="btnInstalaciones" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Instalaciones" toggleGroup="$grupoMenu" userData="Instalaciones">
+               <graphic>
+                  <SVGPath content="M9 3 H15 V8 H9 Z M3 16 H9 V21 H3 Z M15 16 H21 V21 H15 Z M12 8 V12 M6 16 V12 H18 V16" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+
+            <Label styleClass="sidebar-seccion" text="SOPORTE Y AUDITORÍA" />
+            <ToggleButton fx:id="btnLogs" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#navegar" styleClass="nav-boton" text="Logs y pruebas" toggleGroup="$grupoMenu" userData="LogsPruebas">
+               <graphic>
+                  <SVGPath content="M4 5 H20 V19 H4 Z M8 9 H16 M8 13 H16 M8 17 H12" styleClass="nav-icono" />
+               </graphic>
+            </ToggleButton>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <!-- Usuario en sesión -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="usuario-tarjeta">
+               <children>
+                  <StackPane>
+                     <children>
+                        <Circle radius="19.0" styleClass="avatar-circulo" />
+                        <Label fx:id="lblIniciales" styleClass="avatar-texto" text="AG" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblUsuario" styleClass="usuario-nombre" text="Administrador" />
+                        <Label fx:id="lblArea" styleClass="usuario-area" text="Acceso a todas las áreas" />
+                     </children>
+                  </VBox>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="10.0" />
+               </VBox.margin>
+            </HBox>
+            <Button fx:id="btnCerrarSesion" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#cerrarSesion" styleClass="boton-salir" text="Cerrar sesión">
+               <graphic>
+                  <SVGPath content="M14 4 H19 V20 H14 M10 8 L6 12 L10 16 M6 12 H15" styleClass="nav-icono" />
+               </graphic>
+            </Button>
+         </children>
+      </VBox>
+   </left>
+
+   <center>
+      <BorderPane>
+         <!-- ===================== BARRA SUPERIOR ===================== -->
+         <top>
+            <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="topbar">
+               <children>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblTitulo" styleClass="titulo-pagina" text="Inicio" />
+                        <Label fx:id="lblRuta" styleClass="ruta-pagina" text="SOPTEC-IT  /  Panel general" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <HBox alignment="CENTER_LEFT" spacing="6.0" styleClass="buscador">
+                     <children>
+                        <SVGPath content="M10.5 17 A6.5 6.5 0 1 0 10.5 4 A6.5 6.5 0 1 0 10.5 17 Z M15.5 15.5 L20 20" scaleX="0.8" scaleY="0.8" styleClass="icono-tenue" />
+                        <TextField fx:id="txtBuscarGlobal" prefWidth="210.0" promptText="Buscar proyecto, cliente o ID..." />
+                     </children>
+                  </HBox>
+                  <Button fx:id="btnEstadoConexion" mnemonicParsing="false" onAction="#verificarConexion" styleClass="chip-conexion-ok" text="MySQL: Conectado">
+                     <tooltip>
+                        <Tooltip text="Clic para verificar la conexión con soptec_it" />
+                     </tooltip>
+                  </Button>
+                  <Label fx:id="lblFecha" styleClass="fecha-chip" text="Fecha actual" />
+                  <Button fx:id="btnSalirApp" mnemonicParsing="false" onAction="#salirAplicacion" styleClass="boton-icono-salir">
+                     <graphic>
+                        <SVGPath content="M12 3 V11 M7.5 6.5 A7 7 0 1 0 16.5 6.5" styleClass="icono-salir" />
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Cerrar la aplicación" />
+                     </tooltip>
+                  </Button>
+               </children>
+            </HBox>
+         </top>
+
+         <!-- ===================== CONTENIDO (aquí se cargan los módulos) ===================== -->
+         <center>
+            <ScrollPane fx:id="contenedor" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="contenido" />
+         </center>
+      </BorderPane>
+   </center>
+</BorderPane>

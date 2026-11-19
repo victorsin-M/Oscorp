@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- ================= COMPRAS-ALMACÉN: Materiales (CRUD), Proveedores (CRUD), Entradas/Salidas y Órdenes ================= -->
+<VBox prefHeight="760.0" prefWidth="1072.0" spacing="18.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.ComprasAlmacenController">
+   <fx:define>
+      <ToggleGroup fx:id="grupoMovimiento" />
+   </fx:define>
+   <children>
+
+      <!-- Indicadores de inventario en vivo -->
+      <HBox spacing="18.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-azul" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="42.0" styleClass="kpi-icono-fondo" width="42.0" />
+                        <SVGPath content="M3.5 7.5 L12 3.5 L20.5 7.5 V16.5 L12 20.5 L3.5 16.5 Z M3.5 7.5 L12 11.5 L20.5 7.5 M12 11.5 V20.5" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblTotalMateriales" styleClass="kpi-valor" text="0" />
+                        <Label styleClass="kpi-etiqueta" text="Materiales activos" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-rojo" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="42.0" styleClass="kpi-icono-fondo" width="42.0" />
+                        <SVGPath content="M12 4 L21 19.5 H3 Z M12 10 V14 M12 16.8 V17" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblBajoStockAlm" styleClass="kpi-valor" text="0" />
+                        <Label styleClass="kpi-etiqueta" text="Bajo stock (≤ 10)" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-naranja" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="42.0" styleClass="kpi-icono-fondo" width="42.0" />
+                        <SVGPath content="M6 3 H14 L19 8 V21 H6 Z M14 3 V8 H19 M9 13 H16 M9 17 H14" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblTotalProveedores" styleClass="kpi-valor" text="0" />
+                        <Label styleClass="kpi-etiqueta" text="Proveedores activos" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" spacing="14.0" HBox.hgrow="ALWAYS">
+               <styleClass>
+                  <String fx:value="kpi" />
+                  <String fx:value="kpi-verde" />
+               </styleClass>
+               <children>
+                  <StackPane>
+                     <children>
+                        <Rectangle height="42.0" styleClass="kpi-icono-fondo" width="42.0" />
+                        <SVGPath content="M12 3 V21 M16.5 7 H10 A2.5 2.5 0 0 0 10 12 H14 A2.5 2.5 0 0 1 14 17 H7" styleClass="kpi-icono" />
+                     </children>
+                  </StackPane>
+                  <VBox>
+                     <children>
+                        <Label fx:id="lblValorInventario" styleClass="kpi-valor" text="\$0.00" />
+                        <Label styleClass="kpi-etiqueta" text="Valor del inventario" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+
+      <TabPane fx:id="tabsCompras" minHeight="470.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+         <tabs>
+
+            <!-- ========================= 1. MATERIALES (CRUD) ========================= -->
+            <Tab text="Material">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Catálogo de materiales" />
+                                          <Label styleClass="tarjeta-subtitulo" text="Inventario conectado a la tabla material en MySQL" />
+                                       </children>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <CheckBox fx:id="chkInactivosMat" mnemonicParsing="false" onAction="#cargarTablaMateriales" text="Mostrar inactivos" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarMaterial" onAction="#buscarMateriales" promptText="Buscar por descripción de material..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarMateriales" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaMateriales" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Consultar por ID:" />
+                                    <TextField fx:id="txtConsultarIdMat" onAction="#consultarMaterialPorId" prefWidth="95.0" promptText="Ej. 1" />
+                                    <Button mnemonicParsing="false" onAction="#consultarMaterialPorId" styleClass="boton-secundario, boton-compacto" text="Mostrar por ID" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblMateriales" minHeight="220.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colMatId" prefWidth="52.0" text="ID" />
+                                    <TableColumn fx:id="colMatDesc" prefWidth="220.0" text="Descripción del material" />
+                                    <TableColumn fx:id="colMatPrecio" prefWidth="95.0" text="Precio costo" />
+                                    <TableColumn fx:id="colMatExistencias" prefWidth="85.0" text="Existencias" />
+                                    <TableColumn fx:id="colMatStock" prefWidth="98.0" styleClass="col-estado" text="Disponibilidad" />
+                                    <TableColumn fx:id="colMatEstado" prefWidth="82.0" styleClass="col-estado" text="Registro" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="345.0" prefWidth="370.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label fx:id="lblModoMaterial" styleClass="tarjeta-titulo" text="Registrar material" />
+                              <Label styleClass="tarjeta-subtitulo" text="Captura descripción, costo unitario y existencias" />
+
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Descripción del material *" />
+                                    <TextField fx:id="txtDescMaterial" promptText="Ej. Cable UTP Cat6 bobina 305m" />
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Precio costo (MXN) *" />
+                                          <TextField fx:id="txtPrecioMaterial" promptText="Ej. 2850.00" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Existencias *" />
+                                          <TextField fx:id="txtExistenciasMaterial" promptText="Ej. 15" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarMaterial" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarMaterial" styleClass="boton-exito, boton-compacto" text="Guardar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarMaterial" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#desactivarMaterial" styleClass="boton-naranja, boton-compacto" text="Desactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#reactivarMaterial" styleClass="boton-secundario, boton-compacto" text="Reactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarFisicoMaterial" styleClass="boton-peligro, boton-compacto" text="Eliminar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ===================== 2. PROVEEDORES (CRUD) ===================== -->
+            <Tab text="Proveedores y precios">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Directorio de proveedores" />
+                                          <Label styleClass="tarjeta-subtitulo" text="Proveedores registrados en la base de datos soptec_it" />
+                                       </children>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <CheckBox fx:id="chkInactivosProv" mnemonicParsing="false" onAction="#cargarTablaProveedores" text="Mostrar inactivos" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarProv" onAction="#buscarProveedores" promptText="Buscar por nombre, teléfono o correo..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarProveedores" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaProveedores" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Consultar por ID:" />
+                                    <TextField fx:id="txtConsultarIdProv" onAction="#consultarProveedorPorId" prefWidth="95.0" promptText="Ej. 1" />
+                                    <Button mnemonicParsing="false" onAction="#consultarProveedorPorId" styleClass="boton-secundario, boton-compacto" text="Mostrar por ID" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblProveedores" minHeight="220.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colProvId" prefWidth="52.0" text="ID" />
+                                    <TableColumn fx:id="colProvNombre" prefWidth="180.0" text="Proveedor" />
+                                    <TableColumn fx:id="colProvTelefono" prefWidth="120.0" text="Teléfono" />
+                                    <TableColumn fx:id="colProvCorreo" prefWidth="170.0" text="Correo" />
+                                    <TableColumn fx:id="colProvEstado" prefWidth="85.0" styleClass="col-estado" text="Estado" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="355.0" prefWidth="380.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label fx:id="lblModoProveedor" styleClass="tarjeta-titulo" text="Registrar proveedor" />
+                              <Label styleClass="tarjeta-subtitulo" text="Datos de contacto y logotipo del proveedor" />
+
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Razón social / Nombre *" />
+                                    <TextField fx:id="txtNombreProveedor" promptText="Nombre del proveedor" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Teléfono *" />
+                                    <TextField fx:id="txtTelefonoProveedor" promptText="Ej. 3336152200" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Correo *" />
+                                    <TextField fx:id="txtCorreoProveedor" promptText="ventas@proveedor.com" />
+                                 </children>
+                              </VBox>
+
+                              <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                 <children>
+                                    <StackPane prefHeight="80.0" prefWidth="80.0" styleClass="imagen-preview">
+                                       <children>
+                                          <ImageView fx:id="imgProveedor" fitHeight="72.0" fitWidth="72.0" preserveRatio="true" />
+                                       </children>
+                                    </StackPane>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Logotipo / imagen" />
+                                          <Label fx:id="lblRutaImgProv" styleClass="texto-tenue" text="Sin imagen seleccionada" wrapText="true" />
+                                          <HBox spacing="8.0">
+                                             <children>
+                                                <Button mnemonicParsing="false" onAction="#seleccionarImagenProveedor" styleClass="boton-secundario, boton-compacto" text="Elegir imagen" />
+                                                <Button mnemonicParsing="false" onAction="#quitarImagenProveedor" styleClass="boton-secundario, boton-compacto" text="Quitar" />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarProveedor" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarProveedor" styleClass="boton-exito, boton-compacto" text="Guardar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarProveedor" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#desactivarProveedor" styleClass="boton-naranja, boton-compacto" text="Desactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#reactivarProveedor" styleClass="boton-secundario, boton-compacto" text="Reactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarFisicoProveedor" styleClass="boton-peligro, boton-compacto" text="Eliminar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ===================== 3. ENTRADAS Y SALIDAS ===================== -->
+            <Tab text="Entradas y salidas">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox minWidth="330.0" prefWidth="360.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Registrar movimiento de stock" />
+                              <Label styleClass="tarjeta-subtitulo" text="Actualiza automáticamente las existencias reales en MySQL" />
+                              <HBox spacing="20.0">
+                                 <children>
+                                    <RadioButton fx:id="rbEntrada" mnemonicParsing="false" selected="true" text="Entrada (sumar)" toggleGroup="$grupoMovimiento" />
+                                    <RadioButton fx:id="rbSalida" mnemonicParsing="false" text="Salida (descontar)" toggleGroup="$grupoMovimiento" />
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="4.0" top="4.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Material (desde BD)" />
+                                    <ComboBox fx:id="cmbMaterialMov" maxWidth="1.7976931348623157E308" promptText="Seleccionar material" />
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Cantidad" />
+                                          <Spinner fx:id="spnCantidadMov" editable="true" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Fecha" />
+                                          <DatePicker fx:id="dpFechaMov" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proyecto destino (salidas)" />
+                                    <ComboBox fx:id="cmbProyectoMov" disable="true" maxWidth="1.7976931348623157E308" promptText="Seleccionar proyecto" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Responsable" />
+                                    <ComboBox fx:id="cmbResponsableMov" maxWidth="1.7976931348623157E308" promptText="Seleccionar empleado" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Observaciones" />
+                                    <TextArea fx:id="txtObservacionesMov" minHeight="50.0" prefRowCount="2" wrapText="true" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                              <Button fx:id="btnRegistrarMov" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#registrarMovimiento" styleClass="boton-exito" text="Aplicar movimiento en BD" />
+                           </children>
+                        </VBox>
+                        <VBox spacing="14.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label styleClass="tarjeta-titulo" text="Bitácora de movimientos de sesión" />
+                                    <Label styleClass="tarjeta-subtitulo" text="Entradas y salidas aplicadas al catálogo de materiales" />
+                                 </children>
+                              </VBox>
+                              <TableView fx:id="tblMovimientos" minHeight="240.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn prefWidth="85.0" text="Fecha" />
+                                    <TableColumn prefWidth="80.0" styleClass="col-estado" text="Tipo" />
+                                    <TableColumn prefWidth="170.0" text="Material" />
+                                    <TableColumn prefWidth="70.0" text="Cantidad" />
+                                    <TableColumn prefWidth="115.0" text="Referencia" />
+                                    <TableColumn prefWidth="110.0" text="Responsable" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ===================== 4. ÓRDENES DE COMPRA ===================== -->
+            <Tab text="Órdenes de compra">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="14.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label styleClass="tarjeta-titulo" text="Órdenes de compra" />
+                                    <Label styleClass="tarjeta-subtitulo" text="Solicitudes de material generadas para proyectos" />
+                                 </children>
+                              </VBox>
+                              <TableView fx:id="tblOrdenes" minHeight="220.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn prefWidth="75.0" text="Orden" />
+                                    <TableColumn prefWidth="125.0" text="Proveedor" />
+                                    <TableColumn prefWidth="120.0" text="Proyecto" />
+                                    <TableColumn prefWidth="85.0" text="Entrega" />
+                                    <TableColumn prefWidth="90.0" text="Total" />
+                                    <TableColumn prefWidth="95.0" styleClass="col-estado" text="Estado" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                              <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" onAction="#cancelarOrden" styleClass="boton-peligro" text="Cancelar orden" />
+                                    <Button fx:id="btnRecibirOrden" mnemonicParsing="false" onAction="#registrarRecepcion" styleClass="boton-primario" text="Registrar recepción" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                        <VBox minWidth="350.0" prefWidth="375.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Nueva orden de compra" />
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proveedor (BD)" />
+                                    <ComboBox fx:id="cmbProveedorOrden" maxWidth="1.7976931348623157E308" promptText="Seleccionar proveedor" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proyecto (BD)" />
+                                    <ComboBox fx:id="cmbProyectoOrden" maxWidth="1.7976931348623157E308" promptText="Seleccionar proyecto" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Fecha de entrega esperada" />
+                                    <DatePicker fx:id="dpEntregaOrden" maxWidth="1.7976931348623157E308" />
+                                 </children>
+                              </VBox>
+                              <Label styleClass="seccion-titulo" text="PARTIDAS" />
+                              <HBox spacing="6.0">
+                                 <children>
+                                    <ComboBox fx:id="cmbMaterialOrden" maxWidth="1.7976931348623157E308" promptText="Material" HBox.hgrow="ALWAYS" />
+                                    <TextField fx:id="txtCantidadOrden" prefWidth="60.0" promptText="Cant." />
+                                    <Button mnemonicParsing="false" onAction="#agregarPartida" styleClass="boton-primario">
+                                       <graphic>
+                                          <SVGPath content="M12 5 V19 M5 12 H19" styleClass="icono-boton" />
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblPartidas" minHeight="100.0" prefHeight="120.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn prefWidth="130.0" text="Material" />
+                                    <TableColumn prefWidth="50.0" text="Cant." />
+                                    <TableColumn prefWidth="70.0" text="Precio" />
+                                    <TableColumn prefWidth="80.0" text="Importe" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                              <HBox alignment="CENTER_LEFT" styleClass="item-lista">
+                                 <children>
+                                    <Label styleClass="tarjeta-titulo" text="Total" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="lblTotalOrden" styleClass="texto-total" text="\$0.00" />
+                                 </children>
+                              </HBox>
+                              <Button fx:id="btnGenerarOrden" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#generarOrden" styleClass="boton-exito" text="Generar orden de compra" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </children>
+</VBox>

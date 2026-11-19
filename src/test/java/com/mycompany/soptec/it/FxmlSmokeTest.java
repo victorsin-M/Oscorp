@@ -15,6 +15,20 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FxmlSmokeTest {
 
     private static final String[] VISTAS = {
+        // Vistas estilizadas integradas (Interfaces-SOPTEC_IT + CRUD MySQL)
+        "/soptecit/vistas/Login.fxml",
+        "/soptecit/vistas/Principal.fxml",
+        "/soptecit/vistas/Inicio.fxml",
+        "/soptecit/vistas/Seguimiento.fxml",
+        "/soptecit/vistas/Ventas.fxml",
+        "/soptecit/vistas/Citas.fxml",
+        "/soptecit/vistas/Levantamientos.fxml",
+        "/soptecit/vistas/Administracion.fxml",
+        "/soptecit/vistas/ComprasAlmacen.fxml",
+        "/soptecit/vistas/Instalaciones.fxml",
+        "/soptecit/vistas/DetalleFactura.fxml",
+        "/soptecit/vistas/LogsPruebas.fxml",
+        // Vistas CRUD base originales (compatibilidad)
         "/fxml/MainCrud.fxml",
         "/fxml/ClientesView.fxml",
         "/fxml/TelefonosClienteView.fxml",

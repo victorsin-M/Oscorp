@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- ================= CITAS (Agenda estilizada + CRUD completo en MySQL) ================= -->
+<HBox prefHeight="700.0" prefWidth="1072.0" spacing="20.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.CitasController">
+   <children>
+
+      <!-- ===================== AGENDA ===================== -->
+      <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <VBox>
+                     <children>
+                        <Label styleClass="tarjeta-titulo" text="Agenda de citas" />
+                        <Label fx:id="lblResumen" styleClass="tarjeta-subtitulo" text="Citas registradas en MySQL" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <CheckBox fx:id="chkInactivos" mnemonicParsing="false" onAction="#cargarTabla" text="Mostrar inactivos" />
+               </children>
+            </HBox>
+
+            <!-- Filtros y búsqueda -->
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+               <children>
+                  <TextField fx:id="txtBuscarCita" onAction="#buscar" promptText="Buscar por cliente, estado u observaciones..." HBox.hgrow="ALWAYS" />
+                  <ComboBox fx:id="cmbFiltroEstado" prefWidth="140.0" promptText="Estado">
+                     <items>
+                        <FXCollections fx:factory="observableArrayList">
+                           <String fx:value="Todas" />
+                           <String fx:value="Programada" />
+                           <String fx:value="Confirmada" />
+                           <String fx:value="Atendida" />
+                           <String fx:value="Cancelada" />
+                        </FXCollections>
+                     </items>
+                  </ComboBox>
+                  <Button mnemonicParsing="false" onAction="#buscar" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                  <Button mnemonicParsing="false" onAction="#cargarTabla" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+               </children>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+               <children>
+                  <Label styleClass="etiqueta-campo" text="Consultar por ID:" />
+                  <TextField fx:id="txtConsultarId" onAction="#consultarPorId" prefWidth="95.0" promptText="Ej. 1" />
+                  <Button mnemonicParsing="false" onAction="#consultarPorId" styleClass="boton-secundario, boton-compacto" text="Mostrar por ID" />
+               </children>
+            </HBox>
+
+            <TableView fx:id="tblCitas" minHeight="240.0" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
+                  <TableColumn fx:id="colFecha" prefWidth="92.0" text="Fecha" />
+                  <TableColumn fx:id="colHora" prefWidth="68.0" text="Hora" />
+                  <TableColumn fx:id="colCliente" prefWidth="165.0" text="Cliente" />
+                  <TableColumn fx:id="colEstadoCita" prefWidth="105.0" styleClass="col-estado" text="Estado cita" />
+                  <TableColumn fx:id="colObs" prefWidth="150.0" text="Observaciones" />
+                  <TableColumn fx:id="colActivo" prefWidth="82.0" styleClass="col-estado" text="Registro" />
+               </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+               <children>
+                  <Label fx:id="lblConteo" styleClass="texto-tenue" text="0 citas" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="btnCancelarCita" mnemonicParsing="false" onAction="#cancelarCita" styleClass="boton-peligro, boton-compacto" text="Cancelar cita" />
+                  <Button fx:id="btnAtendida" mnemonicParsing="false" onAction="#marcarAtendida" styleClass="boton-primario, boton-compacto" text="Marcar atendida" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+
+      <!-- ===================== FORMULARIO CRUD CITA ===================== -->
+      <VBox minWidth="365.0" prefWidth="390.0" spacing="9.0" styleClass="tarjeta">
+         <children>
+            <Label fx:id="lblModoFormulario" styleClass="tarjeta-titulo" text="Agendar nueva cita" />
+            <Label styleClass="tarjeta-subtitulo" text="Registra o edita citas asociadas a clientes activos" />
+
+            <Label styleClass="seccion-titulo" text="DATOS DEL CLIENTE" />
+            <VBox spacing="4.0">
+               <children>
+                  <Label styleClass="etiqueta-campo" text="Filtrar cliente" />
+                  <TextField fx:id="txtFiltroCliente" promptText="Escribe nombre o RFC..." />
+               </children>
+            </VBox>
+            <VBox spacing="4.0">
+               <children>
+                  <Label styleClass="etiqueta-campo" text="Cliente *" />
+                  <HBox spacing="8.0">
+                     <children>
+                        <ComboBox fx:id="cmbCliente" maxWidth="1.7976931348623157E308" promptText="Seleccionar cliente" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnNuevoCliente" mnemonicParsing="false" onAction="#nuevoCliente" styleClass="boton-secundario">
+                           <graphic>
+                              <SVGPath content="M12 5 V19 M5 12 H19" styleClass="icono-boton" />
+                           </graphic>
+                           <tooltip>
+                              <Tooltip text="Ir a registrar cliente nuevo en Ventas" />
+                           </tooltip>
+                        </Button>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <Label fx:id="lblInfoCliente" styleClass="texto-tenue" text="Selecciona un cliente para ver su correo y dirección." wrapText="true" />
+
+            <Separator styleClass="separador">
+               <VBox.margin>
+                  <Insets top="2.0" />
+               </VBox.margin>
+            </Separator>
+            <Label styleClass="seccion-titulo" text="DATOS DE LA CITA" />
+            <HBox spacing="10.0">
+               <children>
+                  <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label styleClass="etiqueta-campo" text="Fecha *" />
+                        <DatePicker fx:id="dpFechaCita" maxWidth="1.7976931348623157E308" promptText="dd/mm/aaaa" />
+                     </children>
+                  </VBox>
+                  <VBox prefWidth="120.0" spacing="4.0">
+                     <children>
+                        <Label styleClass="etiqueta-campo" text="Hora *" />
+                        <ComboBox fx:id="cmbHora" editable="true" maxWidth="1.7976931348623157E308" promptText="09:00" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <VBox spacing="4.0">
+               <children>
+                  <Label styleClass="etiqueta-campo" text="Estado de la cita *" />
+                  <ComboBox fx:id="cmbEstadoCita" maxWidth="1.7976931348623157E308" promptText="Seleccionar estado" />
+               </children>
+            </VBox>
+            <VBox spacing="4.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label styleClass="etiqueta-campo" text="Observaciones / necesidades del cliente" />
+                  <TextArea fx:id="txtObservaciones" minHeight="75.0" prefRowCount="3" promptText="Describe el servicio solicitado o notas de la visita..." wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+
+            <HBox spacing="8.0">
+               <children>
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiar" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarCita" styleClass="boton-exito, boton-compacto" text="Guardar" HBox.hgrow="ALWAYS" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarCita" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <HBox spacing="8.0">
+               <children>
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#desactivarCita" styleClass="boton-naranja, boton-compacto" text="Desactivar" HBox.hgrow="ALWAYS" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#reactivarCita" styleClass="boton-secundario, boton-compacto" text="Reactivar" HBox.hgrow="ALWAYS" />
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarFisicoCita" styleClass="boton-peligro, boton-compacto" text="Eliminar" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</HBox>

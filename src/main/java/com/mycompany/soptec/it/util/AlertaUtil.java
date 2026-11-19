@@ -1,14 +1,19 @@
 package com.mycompany.soptec.it.util;
 
 import com.mycompany.soptec.it.excepciones.SoptecException;
+import java.net.URL;
 import java.util.Optional;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.stage.Window;
 
 /**
- * Utilidad para mostrar mensajes claros y comprensibles al usuario sin exponer trazas SQL.
+ * Utilidad para mostrar mensajes claros y comprensibles al usuario sin exponer trazas SQL,
+ * aplicando la hoja de estilos institucional de SOPTEC-IT.
  */
 public final class AlertaUtil {
+
+    private static final String CSS = "/soptecit/css/estilos.css";
 
     private AlertaUtil() {
     }
@@ -54,19 +59,41 @@ public final class AlertaUtil {
     }
 
     public static boolean confirmar(String titulo, String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
+        Alert alerta = crear(Alert.AlertType.CONFIRMATION, titulo, mensaje);
         Optional<ButtonType> res = alerta.showAndWait();
         return res.isPresent() && res.get() == ButtonType.OK;
     }
 
     private static void mostrar(Alert.AlertType tipo, String titulo, String mensaje) {
+        crear(tipo, titulo, mensaje).showAndWait();
+    }
+
+    private static Alert crear(Alert.AlertType tipo, String titulo, String mensaje) {
         Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
+        alerta.setTitle("SOPTEC-IT");
+        alerta.setHeaderText(titulo);
         alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        URL cssUrl = AlertaUtil.class.getResource(CSS);
+        if (cssUrl != null) {
+            alerta.getDialogPane().getStylesheets().add(cssUrl.toExternalForm());
+        }
+        Window activa = ventanaActiva();
+        if (activa != null) {
+            alerta.initOwner(activa);
+        }
+        return alerta;
+    }
+
+    private static Window ventanaActiva() {
+        Window primera = null;
+        for (Window w : Window.getWindows()) {
+            if (w.isShowing() && w.isFocused()) {
+                return w;
+            }
+            if (primera == null && w.isShowing()) {
+                primera = w;
+            }
+        }
+        return primera;
     }
 }

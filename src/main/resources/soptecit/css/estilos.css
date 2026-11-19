@@ -1,0 +1,805 @@
+/* =====================================================================
+   SOPTEC-IT  |  Hoja de estilos global
+   Control de Información y Soporte Técnico
+   ---------------------------------------------------------------------
+   Paleta institucional (tomada del logo y de los bocetos):
+     Azul marino   #172941   (barra lateral, títulos)
+     Azul acción   #3188B3   (botones, selección)
+     Azul profundo #156082   (hover, encabezados)
+     Naranja       #F08328   (acentos, cerrar sesión)
+     Verde         #54B359   (éxito, guardar)
+   ===================================================================== */
+
+@font-face { font-family: 'Poppins'; src: url('../fonts/Poppins-Regular.ttf'); }
+@font-face { font-family: 'Poppins Medium'; src: url('../fonts/Poppins-Medium.ttf'); }
+@font-face { font-family: 'Poppins SemiBold'; src: url('../fonts/Poppins-SemiBold.ttf'); }
+@font-face { font-family: 'Poppins'; src: url('../fonts/Poppins-Bold.ttf'); font-weight: bold; }
+
+/* ---------- Colores (looked-up colors reutilizables) ---------- */
+.root {
+    -c-navy: #172941;
+    -c-navy-2: #1E3352;
+    -c-navy-3: #24406A;
+    -c-primario: #3188B3;
+    -c-primario-osc: #156082;
+    -c-primario-suave: #E6F1F7;
+    -c-naranja: #F08328;
+    -c-naranja-suave: #FDEEE1;
+    -c-verde: #54B359;
+    -c-verde-osc: #3F9A45;
+    -c-verde-suave: #E7F5E8;
+    -c-rojo: #E04F4F;
+    -c-rojo-suave: #FBE7E7;
+    -c-amarillo: #D99A0B;
+    -c-amarillo-suave: #FDF3DC;
+    -c-fondo: #F2F5F9;
+    -c-tarjeta: #FFFFFF;
+    -c-borde: #E1E7EF;
+    -c-borde-campo: #CDD6E1;
+    -c-texto: #1C2B3F;
+    -c-texto-2: #4A5A70;
+    -c-tenue: #7B8BA1;
+
+    -fx-font-family: "Poppins";
+    -fx-font-size: 13px;
+    -fx-text-fill: -c-texto;
+    -fx-background-color: -c-fondo;
+    -fx-focus-color: -c-primario;
+    -fx-faint-focus-color: transparent;
+    -fx-accent: -c-primario;
+}
+
+/* =====================================================================
+   LOGIN
+   ===================================================================== */
+.login-marca {
+    -fx-background-color: linear-gradient(to bottom right, #172941 0%, #1B3150 60%, #15476A 100%);
+}
+.login-eslogan {
+    -fx-text-fill: #C9D6E6;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+}
+.login-beneficio {
+    -fx-text-fill: #E4ECF5;
+    -fx-font-size: 13px;
+}
+.login-punto {
+    -fx-fill: -c-naranja;
+}
+.login-pie {
+    -fx-text-fill: #7F93AE;
+    -fx-font-size: 11px;
+}
+.login-form {
+    -fx-background-color: white;
+}
+.login-titulo {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 28px;
+    -fx-text-fill: -c-navy;
+}
+.login-subtitulo {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 13px;
+}
+.mensaje-error {
+    -fx-background-color: -c-rojo-suave;
+    -fx-background-radius: 8;
+    -fx-text-fill: -c-rojo;
+    -fx-padding: 8 12;
+    -fx-font-size: 12px;
+}
+
+/* =====================================================================
+   BARRA LATERAL
+   ===================================================================== */
+.sidebar {
+    -fx-background-color: -c-navy;
+    -fx-padding: 18 14 18 14;
+}
+.sidebar-seccion {
+    -fx-text-fill: #6F86A6;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 10.5px;
+    -fx-padding: 14 0 4 12;
+}
+.nav-boton {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-text-fill: #C3D0E0;
+    -fx-font-family: "Poppins Medium";
+    -fx-font-size: 13px;
+    -fx-alignment: center-left;
+    -fx-graphic-text-gap: 12;
+    -fx-padding: 9 12 9 12;
+    -fx-cursor: hand;
+}
+.nav-boton:hover {
+    -fx-background-color: -c-navy-2;
+    -fx-text-fill: white;
+}
+.nav-boton:selected {
+    -fx-background-color: -c-primario;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(49,136,179,0.45), 12, 0, 0, 3);
+}
+.nav-icono {
+    -fx-fill: transparent;
+    -fx-stroke: #8DA3BF;
+    -fx-stroke-width: 1.7;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.nav-boton:hover .nav-icono,
+.nav-boton:selected .nav-icono {
+    -fx-stroke: white;
+}
+.usuario-tarjeta {
+    -fx-background-color: -c-navy-2;
+    -fx-background-radius: 12;
+    -fx-padding: 10 12 10 10;
+}
+.avatar-circulo {
+    -fx-fill: -c-primario;
+}
+.avatar-texto {
+    -fx-text-fill: white;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 13px;
+}
+.usuario-nombre {
+    -fx-text-fill: white;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 13px;
+}
+.usuario-area {
+    -fx-text-fill: #8DA3BF;
+    -fx-font-size: 11px;
+}
+.boton-salir {
+    -fx-background-color: -c-naranja;
+    -fx-background-radius: 10;
+    -fx-text-fill: white;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-padding: 10 14;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 10;
+}
+.boton-salir:hover {
+    -fx-background-color: #DB7220;
+}
+.boton-salir .nav-icono {
+    -fx-stroke: white;
+}
+
+/* =====================================================================
+   BARRA SUPERIOR
+   ===================================================================== */
+.topbar {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent -c-borde transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 14 28 14 28;
+}
+.titulo-pagina {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 21px;
+    -fx-text-fill: -c-navy;
+}
+.ruta-pagina {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 12px;
+}
+.buscador {
+    -fx-background-color: -c-fondo;
+    -fx-background-radius: 10;
+    -fx-padding: 0 4 0 12;
+    -fx-alignment: center-left;
+}
+.buscador .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-pref-height: 38;
+}
+.icono-tenue {
+    -fx-fill: transparent;
+    -fx-stroke: -c-tenue;
+    -fx-stroke-width: 1.7;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.fecha-chip {
+    -fx-background-color: -c-primario-suave;
+    -fx-background-radius: 10;
+    -fx-text-fill: -c-primario-osc;
+    -fx-font-family: "Poppins Medium";
+    -fx-font-size: 12px;
+    -fx-padding: 9 14;
+}
+.boton-icono {
+    -fx-background-color: -c-fondo;
+    -fx-background-radius: 10;
+    -fx-padding: 9;
+    -fx-cursor: hand;
+}
+.boton-icono:hover {
+    -fx-background-color: -c-primario-suave;
+}
+.notificacion-punto {
+    -fx-fill: -c-naranja;
+    -fx-stroke: white;
+    -fx-stroke-width: 2;
+}
+.contenido {
+    -fx-background-color: -c-fondo;
+    -fx-background: -c-fondo;
+}
+.contenido > .viewport {
+    -fx-background-color: -c-fondo;
+}
+.modulo {
+    -fx-padding: 24 28 28 28;
+}
+
+/* =====================================================================
+   TARJETAS Y TEXTOS
+   ===================================================================== */
+.tarjeta {
+    -fx-background-color: -c-tarjeta;
+    -fx-background-radius: 14;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 14;
+    -fx-padding: 18 20 20 20;
+    -fx-effect: dropshadow(gaussian, rgba(23,41,65,0.06), 14, 0, 0, 4);
+}
+.tarjeta-titulo {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 15px;
+    -fx-text-fill: -c-navy;
+}
+.tarjeta-subtitulo {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 12px;
+}
+.seccion-titulo {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: -c-primario-osc;
+    -fx-padding: 6 0 0 0;
+}
+.etiqueta-campo {
+    -fx-text-fill: -c-texto-2;
+    -fx-font-family: "Poppins Medium";
+    -fx-font-size: 12px;
+}
+.texto-tenue {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 12px;
+}
+.texto-valor {
+    -fx-text-fill: -c-texto;
+    -fx-font-family: "Poppins Medium";
+}
+.texto-grande {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 22px;
+    -fx-text-fill: -c-navy;
+}
+.texto-total {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 20px;
+    -fx-text-fill: -c-verde-osc;
+}
+.enlace {
+    -fx-text-fill: -c-primario;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-underline: false;
+}
+.enlace:hover {
+    -fx-underline: true;
+}
+.separador .line {
+    -fx-border-color: -c-borde;
+    -fx-border-width: 1 0 0 0;
+}
+.bienvenida-titulo {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 20px;
+    -fx-text-fill: white;
+}
+.bienvenida-texto {
+    -fx-text-fill: #C9D6E6;
+}
+.bienvenida {
+    -fx-background-color: linear-gradient(to right, #172941 0%, #1F4467 70%, #3188B3 100%);
+    -fx-background-radius: 14;
+    -fx-padding: 22 26;
+}
+
+/* ---------- KPI ---------- */
+.kpi {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 14;
+    -fx-padding: 16 18;
+    -fx-effect: dropshadow(gaussian, rgba(23,41,65,0.06), 14, 0, 0, 4);
+}
+.kpi-valor {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 24px;
+    -fx-text-fill: -c-navy;
+}
+.kpi-etiqueta {
+    -fx-text-fill: -c-tenue;
+    -fx-font-size: 12px;
+}
+.kpi-icono-fondo { -fx-arc-width: 22; -fx-arc-height: 22; }
+.kpi-azul .kpi-icono-fondo     { -fx-fill: -c-primario-suave; }
+.kpi-naranja .kpi-icono-fondo  { -fx-fill: -c-naranja-suave; }
+.kpi-verde .kpi-icono-fondo    { -fx-fill: -c-verde-suave; }
+.kpi-rojo .kpi-icono-fondo     { -fx-fill: -c-rojo-suave; }
+.kpi-icono {
+    -fx-fill: transparent;
+    -fx-stroke-width: 1.8;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.kpi-azul .kpi-icono    { -fx-stroke: -c-primario; }
+.kpi-naranja .kpi-icono { -fx-stroke: -c-naranja; }
+.kpi-verde .kpi-icono   { -fx-stroke: -c-verde; }
+.kpi-rojo .kpi-icono    { -fx-stroke: -c-rojo; }
+.kpi-tendencia-ok  { -fx-text-fill: -c-verde-osc; -fx-font-size: 11px; }
+.kpi-tendencia-mal { -fx-text-fill: -c-rojo; -fx-font-size: 11px; }
+
+/* =====================================================================
+   BOTONES
+   ===================================================================== */
+.boton-primario, .boton-exito, .boton-secundario, .boton-peligro, .boton-naranja {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 13px;
+    -fx-padding: 9 18;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8;
+}
+.boton-primario { -fx-background-color: -c-primario; -fx-text-fill: white; }
+.boton-primario:hover { -fx-background-color: -c-primario-osc; }
+.boton-exito { -fx-background-color: -c-verde; -fx-text-fill: white; }
+.boton-exito:hover { -fx-background-color: -c-verde-osc; }
+.boton-naranja { -fx-background-color: -c-naranja; -fx-text-fill: white; }
+.boton-naranja:hover { -fx-background-color: #DB7220; }
+.boton-secundario {
+    -fx-background-color: white;
+    -fx-border-color: -c-borde-campo;
+    -fx-text-fill: -c-texto-2;
+}
+.boton-secundario:hover { -fx-background-color: -c-fondo; }
+.boton-peligro {
+    -fx-background-color: white;
+    -fx-border-color: -c-rojo;
+    -fx-text-fill: -c-rojo;
+}
+.boton-peligro:hover { -fx-background-color: -c-rojo-suave; }
+.boton-primario:pressed, .boton-exito:pressed, .boton-naranja:pressed { -fx-opacity: 0.85; }
+.boton-grande { -fx-padding: 12 18; -fx-font-size: 14px; }
+.icono-boton {
+    -fx-fill: transparent;
+    -fx-stroke: white;
+    -fx-stroke-width: 2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.boton-secundario .icono-boton { -fx-stroke: -c-texto-2; }
+
+/* =====================================================================
+   CAMPOS DE FORMULARIO
+   ===================================================================== */
+.text-field, .password-field, .text-area, .combo-box-base, .spinner {
+    -fx-background-color: white;
+    -fx-background-radius: 9;
+    -fx-border-color: -c-borde-campo;
+    -fx-border-radius: 9;
+    -fx-font-size: 13px;
+}
+.text-field, .password-field {
+    -fx-pref-height: 38;
+    -fx-padding: 0 12;
+    -fx-prompt-text-fill: #A3B0C2;
+}
+.text-field:focused, .password-field:focused, .text-area:focused,
+.combo-box-base:focused, .spinner:focused {
+    -fx-border-color: -c-primario;
+    -fx-border-width: 1.5;
+}
+.text-area { -fx-padding: 4; -fx-prompt-text-fill: #A3B0C2; }
+.text-area .content {
+    -fx-background-color: white;
+    -fx-background-radius: 9;
+    -fx-padding: 6 8;
+}
+.text-area .scroll-pane > .viewport { -fx-background-color: transparent; }
+.combo-box-base { -fx-pref-height: 38; }
+.combo-box-base > .arrow-button { -fx-background-color: transparent; -fx-padding: 0 12 0 6; }
+.combo-box-base > .arrow-button > .arrow { -fx-background-color: -c-tenue; }
+.combo-box .list-cell { -fx-padding: 0 0 0 4; -fx-text-fill: -c-texto; }
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 9;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 9;
+    -fx-effect: dropshadow(gaussian, rgba(23,41,65,0.15), 14, 0, 0, 4);
+}
+.combo-box-popup .list-cell { -fx-padding: 8 12; }
+.combo-box-popup .list-cell:hover { -fx-background-color: -c-primario-suave; }
+.combo-box-popup .list-cell:filled:selected { -fx-background-color: -c-primario; -fx-text-fill: white; }
+.date-picker .text-field, .combo-box-base .text-field, .spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.spinner { -fx-pref-height: 38; }
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
+    -fx-background-color: transparent;
+}
+.check-box { -fx-text-fill: -c-texto-2; }
+.check-box > .box {
+    -fx-background-color: white;
+    -fx-border-color: -c-borde-campo;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+.check-box:selected > .box { -fx-background-color: -c-verde; -fx-border-color: -c-verde; }
+.check-box:selected > .box > .mark { -fx-background-color: white; }
+.radio-button { -fx-text-fill: -c-texto-2; }
+.radio-button:selected > .radio { -fx-border-color: -c-primario; }
+.radio-button:selected > .radio > .dot { -fx-background-color: -c-primario; }
+.slider .track { -fx-background-color: -c-borde; -fx-background-radius: 4; -fx-pref-height: 6; }
+.slider .thumb {
+    -fx-background-color: white;
+    -fx-border-color: -c-primario;
+    -fx-border-width: 3;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+}
+
+/* =====================================================================
+   TABLAS
+   ===================================================================== */
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 10;
+    -fx-padding: 0;
+    -fx-table-cell-border-color: transparent;
+    -fx-selection-bar: -c-primario-suave;
+    -fx-selection-bar-non-focused: -c-primario-suave;
+}
+.table-view .column-header-background {
+    -fx-background-color: -c-navy;
+    -fx-background-radius: 10 10 0 0;
+}
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-pref-height: 40;
+}
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 10;
+}
+.table-view .column-header .arrow { -fx-background-color: white; }
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #EEF2F6 transparent;
+    -fx-cell-size: 42;
+    -fx-text-fill: -c-texto;
+}
+.table-row-cell:odd { -fx-background-color: #F8FAFC; }
+.table-row-cell:hover { -fx-background-color: #EEF5FA; }
+.table-row-cell:selected { -fx-background-color: -c-primario-suave; }
+.table-row-cell:selected .table-cell { -fx-text-fill: -c-texto; }
+.table-cell {
+    -fx-padding: 0 10;
+    -fx-alignment: center-left;
+    -fx-text-fill: -c-texto;
+}
+.table-view .placeholder .label { -fx-text-fill: -c-tenue; }
+.table-view .corner { -fx-background-color: -c-navy; }
+
+/* ---------- Insignias (badges) de estado ---------- */
+.badge {
+    -fx-background-radius: 20;
+    -fx-padding: 3 10;
+    -fx-font-family: "Poppins Medium";
+    -fx-font-size: 11px;
+}
+.badge-exito   { -fx-background-color: -c-verde-suave;    -fx-text-fill: -c-verde-osc; }
+.badge-alerta  { -fx-background-color: -c-amarillo-suave; -fx-text-fill: #A8740A; }
+.badge-peligro { -fx-background-color: -c-rojo-suave;     -fx-text-fill: -c-rojo; }
+.badge-info    { -fx-background-color: -c-primario-suave; -fx-text-fill: -c-primario-osc; }
+.badge-neutro  { -fx-background-color: #EDF0F4;           -fx-text-fill: -c-texto-2; }
+.badge-naranja { -fx-background-color: -c-naranja-suave;  -fx-text-fill: #C9640F; }
+
+/* ---------- Barras de progreso ---------- */
+.progress-bar > .track {
+    -fx-background-color: #E6ECF2;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+}
+.progress-bar > .bar {
+    -fx-background-color: -c-primario;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-padding: 3;
+}
+.progreso-exito > .bar  { -fx-background-color: -c-verde; }
+.progreso-alerta > .bar { -fx-background-color: -c-naranja; }
+.progreso-grande > .bar { -fx-padding: 6; }
+
+/* =====================================================================
+   PESTAÑAS (TabPane tipo segmentado)
+   ===================================================================== */
+.tab-pane > .tab-header-area {
+    -fx-padding: 0 0 14 0;
+}
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 10;
+    -fx-padding: 7 16;
+    -fx-cursor: hand;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-insets: 0 6 0 0;
+    -fx-border-insets: 0 6 0 0;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: -c-texto-2;
+    -fx-font-family: "Poppins Medium";
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: -c-navy;
+    -fx-border-color: -c-navy;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+.tab-pane > .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* =====================================================================
+   AGENDA / LISTAS / LÍNEA DE TIEMPO
+   ===================================================================== */
+.dia-toggle {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 10;
+    -fx-text-fill: -c-texto-2;
+    -fx-font-family: "Poppins Medium";
+    -fx-font-size: 12px;
+    -fx-text-alignment: center;
+    -fx-padding: 6 0;
+    -fx-cursor: hand;
+}
+.dia-toggle:hover { -fx-background-color: -c-primario-suave; }
+.dia-toggle:selected {
+    -fx-background-color: -c-navy;
+    -fx-border-color: -c-navy;
+    -fx-text-fill: white;
+}
+.item-lista {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 10;
+    -fx-padding: 10 12;
+}
+.item-hora {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-text-fill: -c-primario-osc;
+    -fx-font-size: 12px;
+    -fx-min-width: 64;
+}
+.item-titulo {
+    -fx-font-family: "Poppins Medium";
+    -fx-text-fill: -c-texto;
+}
+.barra-color-azul    { -fx-fill: -c-primario; -fx-arc-width: 4; -fx-arc-height: 4; }
+.barra-color-naranja { -fx-fill: -c-naranja;  -fx-arc-width: 4; -fx-arc-height: 4; }
+.barra-color-verde   { -fx-fill: -c-verde;    -fx-arc-width: 4; -fx-arc-height: 4; }
+.barra-color-rojo    { -fx-fill: -c-rojo;     -fx-arc-width: 4; -fx-arc-height: 4; }
+
+.croquis-area {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 12;
+    -fx-border-color: #B9C7D8;
+    -fx-border-style: segments(8, 6);
+    -fx-border-radius: 12;
+    -fx-border-width: 1.5;
+}
+
+.paso-hecho     { -fx-fill: -c-verde; }
+.paso-actual    { -fx-fill: -c-primario; }
+.paso-pendiente { -fx-fill: white; -fx-stroke: #C6D1DE; -fx-stroke-width: 2; }
+.paso-marca {
+    -fx-fill: transparent;
+    -fx-stroke: white;
+    -fx-stroke-width: 2.2;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+.paso-linea-hecha     { -fx-stroke: -c-verde; -fx-stroke-width: 2; }
+.paso-linea-pendiente { -fx-stroke: #D5DEE8; -fx-stroke-width: 2; -fx-stroke-dash-array: 4 4; }
+.paso-titulo {
+    -fx-font-family: "Poppins SemiBold";
+    -fx-text-fill: -c-navy;
+    -fx-font-size: 13.5px;
+}
+.paso-pendiente-texto { -fx-text-fill: #9AA8BA; -fx-font-size: 12px; }
+
+.resumen-fila {
+    -fx-border-color: transparent transparent #EEF2F6 transparent;
+    -fx-padding: 8 0;
+}
+
+/* =====================================================================
+   SCROLLBARS DISCRETAS
+   ===================================================================== */
+.scroll-bar { -fx-background-color: transparent; }
+.scroll-bar .thumb {
+    -fx-background-color: #C6D1DE;
+    -fx-background-radius: 6;
+    -fx-background-insets: 2;
+}
+.scroll-bar .thumb:hover { -fx-background-color: #A9B8CA; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow { -fx-shape: " "; -fx-padding: 0; }
+
+.tooltip {
+    -fx-background-color: -c-navy;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+}
+
+/* =====================================================================
+   BOTONES PARA CERRAR LA APLICACIÓN
+   ===================================================================== */
+.boton-cerrar-app {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: -c-borde-campo;
+    -fx-border-radius: 10;
+    -fx-text-fill: -c-texto-2;
+    -fx-font-family: "Poppins Medium";
+    -fx-padding: 7 14;
+    -fx-graphic-text-gap: 8;
+    -fx-cursor: hand;
+}
+.boton-cerrar-app .icono-boton { -fx-stroke: -c-texto-2; }
+.boton-cerrar-app:hover {
+    -fx-background-color: -c-rojo-suave;
+    -fx-border-color: -c-rojo;
+    -fx-text-fill: -c-rojo;
+}
+.boton-cerrar-app:hover .icono-boton { -fx-stroke: -c-rojo; }
+
+.boton-icono-salir {
+    -fx-background-color: -c-fondo;
+    -fx-background-radius: 10;
+    -fx-padding: 9;
+    -fx-cursor: hand;
+}
+.icono-salir {
+    -fx-fill: transparent;
+    -fx-stroke: -c-tenue;
+    -fx-stroke-width: 1.9;
+    -fx-stroke-line-cap: round;
+}
+.boton-icono-salir:hover { -fx-background-color: -c-rojo; }
+.boton-icono-salir:hover .icono-salir { -fx-stroke: white; }
+
+/* =====================================================================
+   DETALLE DE FACTURA
+   ===================================================================== */
+.factura-ventana {
+    -fx-background-color: -c-fondo;
+}
+.factura-hoja {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: -c-borde;
+    -fx-border-radius: 14;
+}
+.factura-encabezado {
+    -fx-background-color: -c-navy;
+    -fx-background-radius: 14 14 0 0;
+    -fx-padding: 18 24;
+}
+.factura-titulo {
+    -fx-text-fill: white;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 22px;
+}
+.factura-folio {
+    -fx-text-fill: -c-naranja;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 15px;
+}
+.factura-cuerpo {
+    -fx-padding: 22 24 24 24;
+}
+.factura-tabla-encabezado {
+    -fx-background-color: -c-primario-suave;
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 9 12;
+}
+.factura-tabla-titulo {
+    -fx-text-fill: -c-primario-osc;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 12px;
+}
+.factura-tabla-fila {
+    -fx-border-color: transparent transparent -c-borde transparent;
+    -fx-padding: 12;
+}
+.factura-total {
+    -fx-border-color: -c-borde transparent transparent transparent;
+    -fx-padding: 8 0 0 0;
+}
+
+/* =====================================================================
+   COMPLEMENTOS CRUD INTEGRADO (Imágenes, estado BD y botones compactos)
+   ===================================================================== */
+.imagen-preview {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 10;
+    -fx-border-color: #B9C7D8;
+    -fx-border-style: segments(6, 4);
+    -fx-border-radius: 10;
+    -fx-border-width: 1.4;
+}
+.boton-compacto {
+    -fx-padding: 7 12;
+    -fx-font-size: 12px;
+}
+.chip-conexion-ok {
+    -fx-background-color: -c-verde-suave;
+    -fx-background-radius: 10;
+    -fx-text-fill: -c-verde-osc;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 12px;
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+}
+.chip-conexion-error {
+    -fx-background-color: -c-rojo-suave;
+    -fx-background-radius: 10;
+    -fx-text-fill: -c-rojo;
+    -fx-font-family: "Poppins SemiBold";
+    -fx-font-size: 12px;
+    -fx-padding: 8 12;
+    -fx-cursor: hand;
+}
+.log-consola {
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 12px;
+}

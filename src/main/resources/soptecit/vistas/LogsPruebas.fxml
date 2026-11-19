@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- ================= LOGS Y PRUEBAS DE TOLERANCIA A FALLOS ================= -->
+<VBox prefHeight="700.0" prefWidth="1072.0" spacing="20.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.LogsPruebasController">
+   <children>
+
+      <!-- Tarjeta de pruebas controladas -->
+      <VBox spacing="12.0" styleClass="tarjeta">
+         <children>
+            <VBox>
+               <children>
+                  <Label styleClass="tarjeta-titulo" text="Pruebas controladas de excepciones y tolerancia a fallos" />
+                  <Label styleClass="tarjeta-subtitulo" text="Valida que el sistema maneje errores de captura, rollback transaccional, llaves foráneas y caídas de MySQL sin cerrarse" />
+               </children>
+            </VBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#simularErrorValidacion" styleClass="boton-primario" text="Simular error de validación" />
+                  <Button mnemonicParsing="false" onAction="#simularRollback" styleClass="boton-naranja" text="Simular transacción con Rollback" />
+                  <Button mnemonicParsing="false" onAction="#simularIntegridad" styleClass="boton-peligro" text="Simular integridad referencial" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <CheckBox fx:id="chkSimularDesconexion" mnemonicParsing="false" onAction="#toggleSimularDesconexion" text="Simular caída de conexión MySQL" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+
+      <!-- Tarjeta del visor de logs -->
+      <VBox spacing="12.0" styleClass="tarjeta" VBox.vgrow="ALWAYS">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <VBox>
+                     <children>
+                        <Label styleClass="tarjeta-titulo" text="Archivo de auditoría y errores" />
+                        <Label fx:id="lblRutaLog" styleClass="tarjeta-subtitulo" text="Archivo: logs/soptec_errores.log" />
+                     </children>
+                  </VBox>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#cargarLog" styleClass="boton-secundario" text="Refrescar log" />
+                  <Button mnemonicParsing="false" onAction="#limpiarLog" styleClass="boton-peligro" text="Limpiar log" />
+               </children>
+            </HBox>
+            <TextArea fx:id="txtLog" editable="false" styleClass="log-consola" wrapText="true" VBox.vgrow="ALWAYS" />
+         </children>
+      </VBox>
+   </children>
+</VBox>

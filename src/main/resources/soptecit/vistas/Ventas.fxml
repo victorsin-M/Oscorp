@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- ================= VENTAS: Clientes, Teléfonos, Proyectos/Propuestas y Facturación ================= -->
+<VBox prefHeight="720.0" prefWidth="1072.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.VentasController">
+   <children>
+      <TabPane fx:id="tabsVentas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+         <tabs>
+
+            <!-- ========================= 1. CLIENTES ========================= -->
+            <Tab text="Clientes">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Cartera de clientes" />
+                                          <Label styleClass="tarjeta-subtitulo" text="Selecciona un cliente para editarlo o gestionar su estado" />
+                                       </children>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <CheckBox fx:id="chkInactivosCliente" mnemonicParsing="false" onAction="#cargarTablaClientes" text="Mostrar inactivos" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarCliente" onAction="#buscarClientes" promptText="Buscar por nombre, RFC, correo o colonia..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarClientes" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaClientes" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Consultar por ID:" />
+                                    <TextField fx:id="txtConsultarIdCliente" onAction="#consultarClientePorId" prefWidth="95.0" promptText="Ej. 1" />
+                                    <Button mnemonicParsing="false" onAction="#consultarClientePorId" styleClass="boton-secundario, boton-compacto" text="Mostrar por ID" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblClientes" minHeight="240.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colCliId" prefWidth="52.0" text="ID" />
+                                    <TableColumn fx:id="colCliRfc" prefWidth="118.0" text="RFC" />
+                                    <TableColumn fx:id="colCliNombre" prefWidth="150.0" text="Nombre / Razón social" />
+                                    <TableColumn fx:id="colCliCorreo" prefWidth="145.0" text="Correo" />
+                                    <TableColumn fx:id="colCliDireccion" prefWidth="155.0" text="Dirección" />
+                                    <TableColumn fx:id="colCliEstado" prefWidth="85.0" styleClass="col-estado" text="Estado" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="370.0" prefWidth="395.0" spacing="9.0" styleClass="tarjeta">
+                           <children>
+                              <Label fx:id="lblModoCliente" styleClass="tarjeta-titulo" text="Registrar cliente" />
+                              <Label styleClass="tarjeta-subtitulo" text="Datos fiscales, domicilio, imagen y alta transaccional" />
+
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox prefWidth="145.0" spacing="4.0">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="RFC *" />
+                                          <TextField fx:id="txtRfcCliente" promptText="XAXX010101000" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Nombre / Razón social *" />
+                                          <TextField fx:id="txtNombreCliente" promptText="Nombre o empresa" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Correo *" />
+                                          <TextField fx:id="txtCorreoCliente" promptText="correo@empresa.com" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefWidth="145.0" spacing="4.0">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Teléfono inicial" />
+                                          <TextField fx:id="txtTelefonoInicial" promptText="Opcional (alta)" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Calle" />
+                                          <TextField fx:id="txtCalleCliente" promptText="Opcional" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefWidth="95.0" spacing="4.0">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Número" />
+                                          <TextField fx:id="txtNumeroCliente" promptText="#123" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Colonia" />
+                                          <TextField fx:id="txtColoniaCliente" promptText="Colonia" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Entidad / Estado" />
+                                          <TextField fx:id="txtEstadoGeoCliente" promptText="Ej. Jalisco" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                 <children>
+                                    <StackPane prefHeight="74.0" prefWidth="74.0" styleClass="imagen-preview">
+                                       <children>
+                                          <ImageView fx:id="imgCliente" fitHeight="68.0" fitWidth="68.0" preserveRatio="true" />
+                                       </children>
+                                    </StackPane>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Imagen / logotipo del cliente" />
+                                          <Label fx:id="lblRutaImgCliente" styleClass="texto-tenue" text="Sin imagen seleccionada" wrapText="true" />
+                                          <HBox spacing="8.0">
+                                             <children>
+                                                <Button mnemonicParsing="false" onAction="#seleccionarImagenCliente" styleClass="boton-secundario, boton-compacto" text="Elegir imagen" />
+                                                <Button mnemonicParsing="false" onAction="#quitarImagenCliente" styleClass="boton-secundario, boton-compacto" text="Quitar" />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarCliente" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarCliente" styleClass="boton-exito, boton-compacto" text="Guardar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarCliente" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#desactivarCliente" styleClass="boton-naranja, boton-compacto" text="Desactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#reactivarCliente" styleClass="boton-secundario, boton-compacto" text="Reactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarFisicoCliente" styleClass="boton-peligro, boton-compacto" text="Eliminar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ==================== 2. TELÉFONOS DE CLIENTE ==================== -->
+            <Tab text="Teléfonos de cliente">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Directorio telefónico de clientes" />
+                                          <Label styleClass="tarjeta-subtitulo" text="Relacionado con clientes mediante selector descriptivo" />
+                                       </children>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <CheckBox fx:id="chkInactivosTel" mnemonicParsing="false" onAction="#cargarTablaTelefonos" text="Mostrar inactivos" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarTel" onAction="#buscarTelefonos" promptText="Buscar por teléfono, nombre de cliente o RFC..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarTelefonos" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#filtrarTelefonosPorCliente" styleClass="boton-secundario, boton-compacto" text="Filtrar por combo" />
+                                    <Button mnemonicParsing="false" onAction="#consultarTelefonoSeleccionado" styleClass="boton-secundario, boton-compacto" text="Ver detalle" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaTelefonos" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblTelefonos" minHeight="240.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colTelCliente" prefWidth="260.0" text="Cliente" />
+                                    <TableColumn fx:id="colTelNumero" prefWidth="150.0" text="Teléfono" />
+                                    <TableColumn fx:id="colTelEstado" prefWidth="100.0" styleClass="col-estado" text="Estado" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="350.0" prefWidth="375.0" spacing="12.0" styleClass="tarjeta">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Gestionar teléfono" />
+                              <Label styleClass="tarjeta-subtitulo" text="Selecciona el cliente y captura el número de contacto" />
+
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Filtrar cliente" />
+                                    <TextField fx:id="txtFiltroClienteTel" promptText="Escribe nombre o RFC para filtrar..." />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Cliente *" />
+                                    <ComboBox fx:id="cmbClienteTel" maxWidth="1.7976931348623157E308" promptText="Seleccionar cliente" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Teléfono * (mín. 10 dígitos)" />
+                                    <TextField fx:id="txtTelefonoCli" promptText="Ej. 3312345678" />
+                                 </children>
+                              </VBox>
+
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarTelefono" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarTelefono" styleClass="boton-exito, boton-compacto" text="Guardar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarTelefono" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#desactivarTelefono" styleClass="boton-naranja, boton-compacto" text="Desactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#reactivarTelefono" styleClass="boton-secundario, boton-compacto" text="Reactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarFisicoTelefono" styleClass="boton-peligro, boton-compacto" text="Eliminar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ==================== 3. PROYECTOS Y PROPUESTAS ==================== -->
+            <Tab text="Proyectos y propuestas">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Proyectos y propuestas" />
+                                          <Label styleClass="tarjeta-subtitulo" text="Expedientes vinculados a clientes registrados en MySQL" />
+                                       </children>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <CheckBox fx:id="chkInactivosProy" mnemonicParsing="false" onAction="#cargarTablaProyectos" text="Mostrar inactivos" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarProy" onAction="#buscarProyectos" promptText="Buscar por nombre de proyecto, cliente o estado..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarProyectos" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaProyectos" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Consultar por ID:" />
+                                    <TextField fx:id="txtConsultarIdProy" onAction="#consultarProyectoPorId" prefWidth="95.0" promptText="Ej. 1" />
+                                    <Button mnemonicParsing="false" onAction="#consultarProyectoPorId" styleClass="boton-secundario, boton-compacto" text="Mostrar por ID" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblProyectos" minHeight="240.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colProyId" prefWidth="48.0" text="ID" />
+                                    <TableColumn fx:id="colProyNombre" prefWidth="150.0" text="Proyecto" />
+                                    <TableColumn fx:id="colProyCliente" prefWidth="150.0" text="Cliente" />
+                                    <TableColumn fx:id="colProyInicio" prefWidth="88.0" text="Inicio" />
+                                    <TableColumn fx:id="colProyFin" prefWidth="88.0" text="Fin est." />
+                                    <TableColumn fx:id="colProyCosto" prefWidth="92.0" text="Costo" />
+                                    <TableColumn fx:id="colProyEstado" prefWidth="95.0" styleClass="col-estado" text="Avance" />
+                                    <TableColumn fx:id="colProyActivo" prefWidth="78.0" styleClass="col-estado" text="Registro" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="370.0" prefWidth="395.0" spacing="9.0" styleClass="tarjeta">
+                           <children>
+                              <Label fx:id="lblModoProyecto" styleClass="tarjeta-titulo" text="Registrar proyecto" />
+                              <Label styleClass="tarjeta-subtitulo" text="Vincula un cliente y define fechas, alcance y costo" />
+
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Filtrar cliente" />
+                                    <TextField fx:id="txtFiltroClienteProy" promptText="Escribe nombre o RFC..." />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Cliente *" />
+                                    <ComboBox fx:id="cmbClienteProy" maxWidth="1.7976931348623157E308" promptText="Seleccionar cliente" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Nombre del proyecto / servicio *" />
+                                    <TextField fx:id="txtNombreProyecto" promptText="Ej. Cableado Cat6 - 24 nodos" />
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Fecha inicio *" />
+                                          <DatePicker fx:id="dpInicioProy" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Fecha estimada fin" />
+                                          <DatePicker fx:id="dpFinProy" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Estado del proyecto *" />
+                                          <ComboBox fx:id="cmbEstadoProy" maxWidth="1.7976931348623157E308" promptText="Seleccionar" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Costo total (MXN) *" />
+                                          <TextField fx:id="txtCostoProy" promptText="Ej. 86400.00" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <Separator styleClass="separador" />
+                              <Label styleClass="texto-tenue" text="Nota: Al actualizar o eliminar un proyecto, el sistema valida integridad referencial con sus levantamientos." wrapText="true" />
+
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarProyecto" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarProyecto" styleClass="boton-exito, boton-compacto" text="Guardar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarProyecto" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#desactivarProyecto" styleClass="boton-naranja, boton-compacto" text="Desactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#reactivarProyecto" styleClass="boton-secundario, boton-compacto" text="Reactivar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarFisicoProyecto" styleClass="boton-peligro, boton-compacto" text="Eliminar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ========================= 4. FACTURACIÓN ========================= -->
+            <Tab text="Facturación">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Historial de facturas" />
+                                          <Label styleClass="tarjeta-subtitulo" text="Doble clic en una factura para verla completa o imprimirla" />
+                                       </children>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <ComboBox fx:id="cmbFiltroFactura" prefWidth="130.0" promptText="Estado">
+                                       <items>
+                                          <FXCollections fx:factory="observableArrayList">
+                                             <String fx:value="Todas" />
+                                             <String fx:value="Pendiente" />
+                                             <String fx:value="Parcial" />
+                                             <String fx:value="Pagada" />
+                                             <String fx:value="Vencida" />
+                                          </FXCollections>
+                                       </items>
+                                    </ComboBox>
+                                 </children>
+                              </HBox>
+                              <TextField fx:id="txtBuscarFactura" promptText="Buscar por folio, proyecto o cliente..." />
+                              <TableView fx:id="tblFacturas" minHeight="220.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn prefWidth="80.0" text="Folio" />
+                                    <TableColumn prefWidth="95.0" text="Proyecto" />
+                                    <TableColumn prefWidth="140.0" text="Cliente" />
+                                    <TableColumn prefWidth="90.0" text="Emisión" />
+                                    <TableColumn prefWidth="95.0" text="Total" />
+                                    <TableColumn prefWidth="95.0" styleClass="col-estado" text="Estado" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Label fx:id="lblResumenFacturas" styleClass="texto-tenue" text="0 facturas" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="btnVerFactura" mnemonicParsing="false" onAction="#verFactura" styleClass="boton-primario" text="Ver factura">
+                                       <graphic>
+                                          <SVGPath content="M2.5 12 C5 7 8.5 5 12 5 C15.5 5 19 7 21.5 12 C19 17 15.5 19 12 19 C8.5 19 5 17 2.5 12 Z M12 15 A3 3 0 1 0 12 9 A3 3 0 1 0 12 15 Z" styleClass="icono-boton" />
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="360.0" prefWidth="380.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Nueva factura" />
+                              <Label styleClass="tarjeta-subtitulo" text="Selecciona un proyecto real para llenar cliente, RFC e importe" />
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proyecto (desde BD)" />
+                                    <ComboBox fx:id="cmbProyectoFactura" maxWidth="1.7976931348623157E308" promptText="Seleccione proyecto" />
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Cliente" />
+                                          <TextField fx:id="txtClienteFactura" editable="false" promptText="Se llena al elegir proyecto" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefWidth="130.0" spacing="5.0">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="RFC" />
+                                          <TextField fx:id="txtRfcFactura" editable="false" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Fecha de emisión" />
+                                          <DatePicker fx:id="dpEmision" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Fecha de vencimiento" />
+                                          <DatePicker fx:id="dpVencimiento" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Concepto" />
+                                    <TextField fx:id="txtConcepto" promptText="Ej. Instalación de red Cat6 - 24 nodos" />
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Importe (sin IVA)" />
+                                          <TextField fx:id="txtImporte" promptText="\$ 0.00" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Método de pago" />
+                                          <ComboBox fx:id="cmbMetodoPago" maxWidth="1.7976931348623157E308" promptText="Seleccionar">
+                                             <items>
+                                                <FXCollections fx:factory="observableArrayList">
+                                                   <String fx:value="Transferencia" />
+                                                   <String fx:value="Efectivo" />
+                                                   <String fx:value="Cheque" />
+                                                   <String fx:value="Tarjeta" />
+                                                </FXCollections>
+                                             </items>
+                                          </ComboBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+
+                              <VBox styleClass="item-lista" VBox.vgrow="ALWAYS">
+                                 <VBox.margin>
+                                    <Insets top="4.0" />
+                                 </VBox.margin>
+                                 <children>
+                                    <HBox>
+                                       <children>
+                                          <Label styleClass="texto-tenue" text="Subtotal" />
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="lblSubtotal" styleClass="texto-valor" text="\$0.00" />
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Label styleClass="texto-tenue" text="IVA (16 %)" />
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="lblIva" styleClass="texto-valor" text="\$0.00" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT">
+                                       <VBox.margin>
+                                          <Insets top="4.0" />
+                                       </VBox.margin>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Total" />
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="lblTotal" styleClass="texto-total" text="\$0.00" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" onAction="#limpiarFactura" styleClass="boton-secundario" text="Limpiar" />
+                                    <Button fx:id="btnEmitirFactura" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#emitirFactura" styleClass="boton-exito" text="Emitir factura" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </children>
+</VBox>

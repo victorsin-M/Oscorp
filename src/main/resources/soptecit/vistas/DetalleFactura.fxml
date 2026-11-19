@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- ================= DETALLE DE FACTURA (ventana que se abre desde el historial) ================= -->
+<VBox prefHeight="760.0" prefWidth="680.0" spacing="14.0" styleClass="factura-ventana" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.DetalleFacturaController">
+   <padding>
+      <Insets bottom="18.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   <children>
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="contenido" VBox.vgrow="ALWAYS">
+         <content>
+
+            <!-- Hoja de la factura (esto es lo que se imprime) -->
+            <VBox fx:id="hojaFactura" styleClass="factura-hoja">
+               <children>
+
+                  <!-- Encabezado -->
+                  <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="factura-encabezado">
+                     <children>
+                        <ImageView fitWidth="210.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../img/logo.png" />
+                           </image>
+                        </ImageView>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <VBox alignment="CENTER_RIGHT" spacing="2.0">
+                           <children>
+                              <Label styleClass="factura-titulo" text="FACTURA" />
+                              <Label fx:id="lblFolio" styleClass="factura-folio" text="F-0105" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+
+                  <VBox spacing="18.0" styleClass="factura-cuerpo">
+                     <children>
+                        <!-- Emisor / Cliente -->
+                        <HBox spacing="20.0">
+                           <children>
+                              <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="seccion-titulo" text="EMISOR" />
+                                    <Label styleClass="texto-valor" text="SOPTEC-IT" />
+                                    <Label styleClass="texto-tenue" text="Cableado estructurado y fibra óptica" />
+                                    <Label styleClass="texto-tenue" text="Guadalajara, Jalisco" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="3.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="seccion-titulo" text="FACTURADO A" />
+                                    <Label fx:id="lblCliente" styleClass="texto-valor" text="Corporativo Avante" />
+                                    <Label fx:id="lblRfc" styleClass="texto-tenue" text="RFC: CAV150301AB2" />
+                                 </children>
+                              </VBox>
+                              <VBox alignment="TOP_RIGHT" spacing="6.0">
+                                 <children>
+                                    <Label styleClass="seccion-titulo" text="ESTADO" />
+                                    <Label fx:id="lblEstado" text="Parcial">
+                                       <styleClass>
+                                          <String fx:value="badge" />
+                                          <String fx:value="badge-alerta" />
+                                       </styleClass>
+                                    </Label>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+
+                        <!-- Datos generales -->
+                        <GridPane hgap="12.0" styleClass="item-lista" vgap="8.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                              <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                              <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                              <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
+                           </columnConstraints>
+                           <children>
+                              <Label styleClass="texto-tenue" text="Proyecto" />
+                              <Label styleClass="texto-tenue" text="Fecha de emisión" GridPane.columnIndex="1" />
+                              <Label styleClass="texto-tenue" text="Vencimiento" GridPane.columnIndex="2" />
+                              <Label styleClass="texto-tenue" text="Método de pago" GridPane.columnIndex="3" />
+                              <Label fx:id="lblProyecto" styleClass="texto-valor" text="PRY-2026-014" GridPane.rowIndex="1" />
+                              <Label fx:id="lblEmision" styleClass="texto-valor" text="15/10/2026" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label fx:id="lblVencimiento" styleClass="texto-valor" text="14/11/2026" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <Label fx:id="lblMetodo" styleClass="texto-valor" text="Transferencia" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                           </children>
+                        </GridPane>
+
+                        <!-- Conceptos -->
+                        <VBox>
+                           <children>
+                              <HBox styleClass="factura-tabla-encabezado">
+                                 <children>
+                                    <Label styleClass="factura-tabla-titulo" text="Concepto" HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+                                    <Label alignment="CENTER_RIGHT" minWidth="120.0" styleClass="factura-tabla-titulo" text="Importe" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" styleClass="factura-tabla-fila">
+                                 <children>
+                                    <Label fx:id="lblConcepto" maxWidth="1.7976931348623157E308" text="Instalación de red Cat6 - 24 nodos" wrapText="true" HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="lblImporte" alignment="CENTER_RIGHT" minWidth="120.0" styleClass="texto-valor" text="\$86,400.00" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+
+                        <!-- Totales -->
+                        <HBox>
+                           <children>
+                              <Region HBox.hgrow="ALWAYS" />
+                              <VBox minWidth="260.0" spacing="6.0">
+                                 <children>
+                                    <HBox>
+                                       <children>
+                                          <Label styleClass="texto-tenue" text="Subtotal" />
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="lblSubtotal" styleClass="texto-valor" text="\$86,400.00" />
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Label styleClass="texto-tenue" text="IVA (16 %)" />
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="lblIva" styleClass="texto-valor" text="\$13,824.00" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" styleClass="factura-total">
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Total" />
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Label fx:id="lblTotal" styleClass="texto-total" text="\$100,224.00" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+
+                        <Label styleClass="texto-tenue" text="Documento generado por el sistema SOPTEC-IT · Control de Información y Soporte Técnico" wrapText="true" />
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+
+      <!-- Acciones -->
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Button fx:id="btnImprimir" mnemonicParsing="false" onAction="#imprimir" styleClass="boton-secundario" text="Imprimir">
+               <graphic>
+                  <SVGPath content="M7 8 V3 H17 V8 M7 17 H4 V9 H20 V17 H17 M7 14 H17 V21 H7 Z" styleClass="icono-boton" />
+               </graphic>
+            </Button>
+            <Button fx:id="btnCerrar" cancelButton="true" defaultButton="true" mnemonicParsing="false" onAction="#cerrar" styleClass="boton-primario" text="Cerrar" />
+         </children>
+      </HBox>
+   </children>
+</VBox>
