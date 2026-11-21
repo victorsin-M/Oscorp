@@ -2,23 +2,27 @@ package com.mycompany.soptec.it.servicio;
 
 import com.mycompany.soptec.it.dao.CitaDao;
 import com.mycompany.soptec.it.dao.ClienteDao;
+import com.mycompany.soptec.it.dao.ProyectoDao;
 import com.mycompany.soptec.it.excepciones.IntegridadReferencialException;
 import com.mycompany.soptec.it.excepciones.SoptecException;
 import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Cita;
 import com.mycompany.soptec.it.modelo.Cliente;
+import com.mycompany.soptec.it.modelo.Levantamiento;
+import com.mycompany.soptec.it.modelo.Proyecto;
 import com.mycompany.soptec.it.util.AppLogger;
 import com.mycompany.soptec.it.util.Validador;
 import java.util.List;
 
 /**
- * Reglas de negocio para citas asociadas a clientes.
+ * Reglas de negocio para citas asociadas a clientes y levantamiento tecnico conjunto.
  */
 public class CitaService {
 
     private static final String MODULO = "Citas";
     private final CitaDao dao = new CitaDao();
     private final ClienteDao clienteDao = new ClienteDao();
+    private final ProyectoDao proyectoDao = new ProyectoDao();
 
     public Cita crear(Cita c) throws SoptecException {
         try {
@@ -30,6 +34,41 @@ public class CitaService {
             return creada;
         } catch (ValidacionException | IntegridadReferencialException ex) {
             AppLogger.registrarExcepcion(MODULO, "CitaService", "CREAR_CITA", ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Registra una cita y su levantamiento/servicio inicial en una transaccion atomica.
+     * Si falla el levantamiento relacionado, la cita no queda registrada parcialmente.
+     */
+    public Cita crearConLevantamientoInicial(Cita c, Levantamiento lev, boolean simularFallo) throws SoptecException {
+        String op = "CREAR_CITA_CON_LEVANTAMIENTO";
+        try {
+            validar(c, op);
+            c.setActivo(true);
+            if (lev != null) {
+                if (lev.getIdProyecto() <= 0) {
+                    throw new ValidacionException(MODULO, op,
+                            "Para registrar un levantamiento junto con la cita, selecciona un proyecto válido.");
+                }
+                Proyecto p = proyectoDao.obtenerPorId(lev.getIdProyecto());
+                if (p == null) {
+                    throw new IntegridadReferencialException(MODULO, op,
+                            "El proyecto seleccionado para el levantamiento no existe.");
+                }
+                if (!p.isActivo()) {
+                    throw new ValidacionException(MODULO, op,
+                            "El proyecto '" + p.getNombreProyecto() + "' está inactivo.");
+                }
+                if (lev.getFechaVisita() == null) {
+                    lev.setFechaVisita(c.getFechaCita());
+                }
+                lev.setObservacionesTecnicas(Validador.opcional(lev.getObservacionesTecnicas()));
+            }
+            return dao.crearConLevantamientoInicial(c, lev, simularFallo);
+        } catch (ValidacionException | IntegridadReferencialException ex) {
+            AppLogger.registrarExcepcion(MODULO, "CitaService", op, ex);
             throw ex;
         }
     }

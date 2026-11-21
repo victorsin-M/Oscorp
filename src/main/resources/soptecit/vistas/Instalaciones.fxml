@@ -11,6 +11,8 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
@@ -20,176 +22,356 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 
-<!-- ================= INSTALACIONES: proyectos reales y captura de avance ================= -->
-<HBox prefHeight="720.0" prefWidth="1072.0" spacing="20.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.InstalacionesController">
+<!-- ================= INSTALACIONES: Avance + M:N proyecto_empleado y proyecto_material ================= -->
+<VBox prefHeight="720.0" prefWidth="1072.0" spacing="16.0" styleClass="modulo" stylesheets="@../css/estilos.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="soptecit.controladores.InstalacionesController">
    <children>
+      <TabPane styleClass="pestanas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+         <tabs>
 
-      <!-- ===================== PROYECTOS + HISTORIAL ===================== -->
-      <VBox spacing="20.0" HBox.hgrow="ALWAYS">
-         <children>
-            <VBox spacing="12.0" styleClass="tarjeta" VBox.vgrow="ALWAYS">
-               <children>
-                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <!-- ===================== 1. AVANCE DE OBRA ===================== -->
+            <Tab text="Avance de obra">
+               <content>
+                  <HBox spacing="20.0">
                      <children>
-                        <VBox>
+                        <VBox spacing="16.0" HBox.hgrow="ALWAYS">
                            <children>
-                              <Label styleClass="tarjeta-titulo" text="Proyectos en instalación" />
-                              <Label styleClass="tarjeta-subtitulo" text="Proyectos activos desde MySQL; selecciona uno para capturar su avance" />
+                              <VBox spacing="12.0" styleClass="tarjeta" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                       <children>
+                                          <VBox>
+                                             <children>
+                                                <Label styleClass="tarjeta-titulo" text="Proyectos en instalación" />
+                                                <Label styleClass="tarjeta-subtitulo" text="Proyectos activos desde MySQL; selecciona uno para capturar avance o ver relaciones" />
+                                             </children>
+                                          </VBox>
+                                          <Region HBox.hgrow="ALWAYS" />
+                                          <Button mnemonicParsing="false" onAction="#cargarDatos" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+                                       </children>
+                                    </HBox>
+                                    <TableView fx:id="tblInstalaciones" minHeight="185.0" VBox.vgrow="ALWAYS">
+                                       <columns>
+                                          <TableColumn prefWidth="80.0" text="Folio" />
+                                          <TableColumn prefWidth="140.0" text="Cliente" />
+                                          <TableColumn prefWidth="150.0" text="Proyecto" />
+                                          <TableColumn prefWidth="120.0" styleClass="col-avance" text="Avance" />
+                                          <TableColumn prefWidth="88.0" text="Entrega est." />
+                                          <TableColumn prefWidth="95.0" styleClass="col-estado" text="Estado" />
+                                       </columns>
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </children>
+                              </VBox>
+                              <VBox spacing="12.0" styleClass="tarjeta" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <VBox>
+                                       <children>
+                                          <Label styleClass="tarjeta-titulo" text="Historial de avances capturados" />
+                                          <Label fx:id="lblProyectoHistorial" styleClass="tarjeta-subtitulo" text="Selecciona un proyecto" />
+                                       </children>
+                                    </VBox>
+                                    <TableView fx:id="tblHistorial" minHeight="145.0" VBox.vgrow="ALWAYS">
+                                       <columns>
+                                          <TableColumn prefWidth="85.0" text="Fecha" />
+                                          <TableColumn prefWidth="135.0" text="Tarea" />
+                                          <TableColumn prefWidth="65.0" text="Avance" />
+                                          <TableColumn prefWidth="115.0" text="Técnico" />
+                                          <TableColumn prefWidth="175.0" text="Observaciones" />
+                                       </columns>
+                                       <columnResizePolicy>
+                                          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                       </columnResizePolicy>
+                                    </TableView>
+                                 </children>
+                              </VBox>
                            </children>
                         </VBox>
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Button mnemonicParsing="false" onAction="#cargarDatos" styleClass="boton-secundario, boton-compacto" text="Refrescar" />
+
+                        <VBox minWidth="350.0" prefWidth="375.0" spacing="9.0" styleClass="tarjeta">
+                           <children>
+                              <Label styleClass="tarjeta-titulo" text="Capturar avance" />
+                              <Label styleClass="tarjeta-subtitulo" text="Actualiza estado y vincula al técnico en proyecto_empleado" />
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proyecto (BD) *" />
+                                    <ComboBox fx:id="cmbProyectoAvance" maxWidth="1.7976931348623157E308" promptText="Seleccione proyecto" />
+                                 </children>
+                              </VBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Fecha" />
+                                          <DatePicker fx:id="dpFechaAvance" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefWidth="105.0" spacing="4.0">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Horas" />
+                                          <Spinner fx:id="spnHoras" editable="true" maxWidth="1.7976931348623157E308" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Tarea realizada *" />
+                                          <ComboBox fx:id="cmbTarea" editable="true" maxWidth="1.7976931348623157E308" promptText="Seleccionar">
+                                             <items>
+                                                <FXCollections fx:factory="observableArrayList">
+                                                   <String fx:value="Canalización" />
+                                                   <String fx:value="Tendido de cable" />
+                                                   <String fx:value="Ponchado / terminación" />
+                                                   <String fx:value="Montaje de rack" />
+                                                   <String fx:value="Fusión de fibra" />
+                                                   <String fx:value="Certificación" />
+                                                   <String fx:value="Etiquetado" />
+                                                </FXCollections>
+                                             </items>
+                                          </ComboBox>
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label styleClass="etiqueta-campo" text="Técnico (BD) *" />
+                                          <ComboBox fx:id="cmbTecnico" maxWidth="1.7976931348623157E308" promptText="Responsable" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <Separator styleClass="separador" />
+                              <HBox alignment="CENTER_LEFT">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Porcentaje de avance" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="lblPorcentaje" styleClass="texto-grande" text="60 %" />
+                                 </children>
+                              </HBox>
+                              <Slider fx:id="sldAvance" blockIncrement="5.0" majorTickUnit="25.0" minorTickCount="4" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="60.0" />
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Estado del proyecto en BD" />
+                                    <ComboBox fx:id="cmbEstadoAvance" maxWidth="1.7976931348623157E308" promptText="Seleccionar">
+                                       <items>
+                                          <FXCollections fx:factory="observableArrayList">
+                                             <String fx:value="Planeado" />
+                                             <String fx:value="En proceso" />
+                                             <String fx:value="En revisión" />
+                                             <String fx:value="Finalizado" />
+                                          </FXCollections>
+                                       </items>
+                                    </ComboBox>
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Observaciones / incidencias" />
+                                    <TextArea fx:id="txtObservacionesAvance" minHeight="56.0" prefRowCount="2" promptText="Problemas encontrados, pendientes, acuerdos..." wrapText="true" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                              <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                 <children>
+                                    <Button fx:id="btnAdjuntar" mnemonicParsing="false" onAction="#adjuntarEvidencia" styleClass="boton-secundario, boton-compacto" text="Guardar evidencia">
+                                       <graphic>
+                                          <SVGPath content="M4 7 H8 L10 5 H14 L16 7 H20 V19 H4 Z M12 16 A3 3 0 1 0 12 10 A3 3 0 1 0 12 16 Z" styleClass="icono-boton" />
+                                       </graphic>
+                                    </Button>
+                                    <Label fx:id="lblEvidencias" styleClass="texto-tenue" text="Sin evidencias guardadas" wrapText="true" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <CheckBox fx:id="chkTerminado" mnemonicParsing="false" text="Proyecto terminado: enviar a revisión final">
+                                 <VBox.margin>
+                                    <Insets top="2.0" />
+                                 </VBox.margin>
+                              </CheckBox>
+                              <Button fx:id="btnGuardarAvance" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarAvance" styleClass="boton-exito" text="Guardar avance" />
+                           </children>
+                        </VBox>
                      </children>
                   </HBox>
-                  <TableView fx:id="tblInstalaciones" minHeight="190.0" VBox.vgrow="ALWAYS">
-                     <columns>
-                        <TableColumn prefWidth="80.0" text="Folio" />
-                        <TableColumn prefWidth="140.0" text="Cliente" />
-                        <TableColumn prefWidth="150.0" text="Proyecto" />
-                        <TableColumn prefWidth="120.0" styleClass="col-avance" text="Avance" />
-                        <TableColumn prefWidth="88.0" text="Entrega est." />
-                        <TableColumn prefWidth="95.0" styleClass="col-estado" text="Estado" />
-                     </columns>
-                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-                  </TableView>
-               </children>
-            </VBox>
-            <VBox spacing="12.0" styleClass="tarjeta" VBox.vgrow="ALWAYS">
-               <children>
-                  <VBox>
-                     <children>
-                        <Label styleClass="tarjeta-titulo" text="Historial de avances capturados" />
-                        <Label fx:id="lblProyectoHistorial" styleClass="tarjeta-subtitulo" text="Selecciona un proyecto" />
-                     </children>
-                  </VBox>
-                  <TableView fx:id="tblHistorial" minHeight="150.0" VBox.vgrow="ALWAYS">
-                     <columns>
-                        <TableColumn prefWidth="85.0" text="Fecha" />
-                        <TableColumn prefWidth="135.0" text="Tarea" />
-                        <TableColumn prefWidth="65.0" text="Avance" />
-                        <TableColumn prefWidth="110.0" text="Técnico" />
-                        <TableColumn prefWidth="180.0" text="Observaciones" />
-                     </columns>
-                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-                  </TableView>
-               </children>
-            </VBox>
-         </children>
-      </VBox>
+               </content>
+            </Tab>
 
-      <!-- ===================== CAPTURAR AVANCE ===================== -->
-      <VBox minWidth="350.0" prefWidth="375.0" spacing="10.0" styleClass="tarjeta">
-         <children>
-            <Label styleClass="tarjeta-titulo" text="Capturar avance" />
-            <Label styleClass="tarjeta-subtitulo" text="Actualiza el progreso y el estado real del proyecto en MySQL" />
-            <VBox spacing="4.0">
-               <children>
-                  <Label styleClass="etiqueta-campo" text="Proyecto (BD) *" />
-                  <ComboBox fx:id="cmbProyectoAvance" maxWidth="1.7976931348623157E308" promptText="Seleccione proyecto" />
-               </children>
-            </VBox>
-            <HBox spacing="10.0">
-               <children>
-                  <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+            <!-- ===================== 2. TÉCNICOS POR PROYECTO (M:N proyecto_empleado) ===================== -->
+            <Tab text="Técnicos por proyecto (M:N)">
+               <content>
+                  <HBox spacing="20.0">
                      <children>
-                        <Label styleClass="etiqueta-campo" text="Fecha" />
-                        <DatePicker fx:id="dpFechaAvance" maxWidth="1.7976931348623157E308" />
-                     </children>
-                  </VBox>
-                  <VBox prefWidth="105.0" spacing="4.0">
-                     <children>
-                        <Label styleClass="etiqueta-campo" text="Horas" />
-                        <Spinner fx:id="spnHoras" editable="true" maxWidth="1.7976931348623157E308" />
-                     </children>
-                  </VBox>
-               </children>
-            </HBox>
-            <HBox spacing="10.0">
-               <children>
-                  <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Label styleClass="etiqueta-campo" text="Tarea realizada *" />
-                        <ComboBox fx:id="cmbTarea" editable="true" maxWidth="1.7976931348623157E308" promptText="Seleccionar">
-                           <items>
-                              <FXCollections fx:factory="observableArrayList">
-                                 <String fx:value="Canalización" />
-                                 <String fx:value="Tendido de cable" />
-                                 <String fx:value="Ponchado / terminación" />
-                                 <String fx:value="Montaje de rack" />
-                                 <String fx:value="Fusión de fibra" />
-                                 <String fx:value="Certificación" />
-                                 <String fx:value="Etiquetado" />
-                              </FXCollections>
-                           </items>
-                        </ComboBox>
-                     </children>
-                  </VBox>
-                  <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Label styleClass="etiqueta-campo" text="Técnico (BD) *" />
-                        <ComboBox fx:id="cmbTecnico" maxWidth="1.7976931348623157E308" promptText="Responsable" />
-                     </children>
-                  </VBox>
-               </children>
-            </HBox>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label styleClass="tarjeta-titulo" text="Asignación de personal a proyectos (proyecto_empleado)" />
+                                    <Label styleClass="tarjeta-subtitulo" text="Relación muchos a muchos entre proyectos y empleados activos en MySQL" />
+                                 </children>
+                              </VBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarPe" onAction="#buscarPe" promptText="Buscar por proyecto, cliente, empleado o puesto..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarPe" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaPe" styleClass="boton-secundario, boton-compacto" text="Ver todos" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblProyEmp" minHeight="240.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colPeProyecto" prefWidth="175.0" text="Proyecto" />
+                                    <TableColumn fx:id="colPeCliente" prefWidth="135.0" text="Cliente" />
+                                    <TableColumn fx:id="colPeEmpleado" prefWidth="150.0" text="Empleado" />
+                                    <TableColumn fx:id="colPePuesto" prefWidth="120.0" text="Puesto" />
+                                    <TableColumn fx:id="colPeEstado" prefWidth="92.0" styleClass="col-estado" text="Estado proy." />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
 
-            <Separator styleClass="separador" />
-            <HBox alignment="CENTER_LEFT">
-               <children>
-                  <Label styleClass="etiqueta-campo" text="Porcentaje de avance" />
-                  <Region HBox.hgrow="ALWAYS" />
-                  <Label fx:id="lblPorcentaje" styleClass="texto-grande" text="60 %" />
-               </children>
-            </HBox>
-            <Slider fx:id="sldAvance" blockIncrement="5.0" majorTickUnit="25.0" minorTickCount="4" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="60.0" />
-            <VBox spacing="4.0">
-               <children>
-                  <Label styleClass="etiqueta-campo" text="Estado del proyecto en BD" />
-                  <ComboBox fx:id="cmbEstadoAvance" maxWidth="1.7976931348623157E308" promptText="Seleccionar">
-                     <items>
-                        <FXCollections fx:factory="observableArrayList">
-                           <String fx:value="Planeado" />
-                           <String fx:value="En proceso" />
-                           <String fx:value="En revisión" />
-                           <String fx:value="Finalizado" />
-                        </FXCollections>
-                     </items>
-                  </ComboBox>
-               </children>
-            </VBox>
-            <VBox spacing="4.0">
-               <children>
-                  <Label styleClass="etiqueta-campo" text="Material utilizado" />
-                  <TextField fx:id="txtMaterialUsado" promptText="Ej. 2 bobinas Cat6, 24 jacks RJ45" />
-               </children>
-            </VBox>
-            <VBox spacing="4.0" VBox.vgrow="ALWAYS">
-               <children>
-                  <Label styleClass="etiqueta-campo" text="Observaciones / incidencias" />
-                  <TextArea fx:id="txtObservacionesAvance" minHeight="56.0" prefRowCount="2" promptText="Problemas encontrados, pendientes, acuerdos..." wrapText="true" VBox.vgrow="ALWAYS" />
-               </children>
-            </VBox>
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <children>
-                  <Button fx:id="btnAdjuntar" mnemonicParsing="false" onAction="#adjuntarEvidencia" styleClass="boton-secundario, boton-compacto" text="Adjuntar fotos">
-                     <graphic>
-                        <SVGPath content="M4 7 H8 L10 5 H14 L16 7 H20 V19 H4 Z M12 16 A3 3 0 1 0 12 10 A3 3 0 1 0 12 16 Z" styleClass="icono-boton" />
-                     </graphic>
-                  </Button>
-                  <Label fx:id="lblEvidencias" styleClass="texto-tenue" text="Sin evidencias adjuntas" />
-               </children>
-            </HBox>
-            <CheckBox fx:id="chkTerminado" mnemonicParsing="false" text="Proyecto terminado: enviar a revisión final">
-               <VBox.margin>
-                  <Insets top="2.0" />
-               </VBox.margin>
-            </CheckBox>
-            <Button fx:id="btnGuardarAvance" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardarAvance" styleClass="boton-exito" text="Guardar avance" />
-         </children>
-      </VBox>
+                        <VBox minWidth="350.0" prefWidth="375.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label fx:id="lblModoPe" styleClass="tarjeta-titulo" text="Asignar empleado a proyecto" />
+                              <Label styleClass="tarjeta-subtitulo" text="Selecciona proyecto y empleado sin recapturar datos" />
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Filtrar proyecto" />
+                                    <TextField fx:id="txtFiltroProyPe" promptText="Escribe nombre del proyecto..." />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proyecto *" />
+                                    <ComboBox fx:id="cmbProyectoPe" maxWidth="1.7976931348623157E308" promptText="Seleccionar proyecto" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Filtrar empleado" />
+                                    <TextField fx:id="txtFiltroEmpPe" promptText="Escribe nombre o puesto..." />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Empleado *" />
+                                    <ComboBox fx:id="cmbEmpleadoPe" maxWidth="1.7976931348623157E308" promptText="Seleccionar empleado" />
+                                 </children>
+                              </VBox>
+                              <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#filtrarPePorProyecto" styleClass="boton-secundario, boton-compacto" text="Ver equipo del proyecto seleccionado" />
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarPe" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#asignarPe" styleClass="boton-exito, boton-compacto" text="Asignar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarPe" styleClass="boton-primario, boton-compacto" text="Actualizar" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarPe" styleClass="boton-peligro, boton-compacto" text="Desvincular" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+
+            <!-- ===================== 3. MATERIALES POR PROYECTO (M:N proyecto_material) ===================== -->
+            <Tab text="Materiales por proyecto (M:N)">
+               <content>
+                  <HBox spacing="20.0">
+                     <children>
+                        <VBox spacing="12.0" styleClass="tarjeta" HBox.hgrow="ALWAYS">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label styleClass="tarjeta-titulo" text="Materiales asignados a proyectos (proyecto_material)" />
+                                    <Label styleClass="tarjeta-subtitulo" text="Relación M:N con descuento/reintegro transaccional de inventario en MySQL" />
+                                 </children>
+                              </VBox>
+                              <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                 <children>
+                                    <TextField fx:id="txtBuscarPm" onAction="#buscarPm" promptText="Buscar por proyecto o material..." HBox.hgrow="ALWAYS" />
+                                    <Button mnemonicParsing="false" onAction="#buscarPm" styleClass="boton-primario, boton-compacto" text="Buscar" />
+                                    <Button mnemonicParsing="false" onAction="#cargarTablaPm" styleClass="boton-secundario, boton-compacto" text="Ver todos" />
+                                 </children>
+                              </HBox>
+                              <TableView fx:id="tblProyMat" minHeight="240.0" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="colPmProyecto" prefWidth="165.0" text="Proyecto" />
+                                    <TableColumn fx:id="colPmMaterial" prefWidth="175.0" text="Material" />
+                                    <TableColumn fx:id="colPmCantidad" prefWidth="70.0" text="Cant." />
+                                    <TableColumn fx:id="colPmCosto" prefWidth="85.0" text="Precio u." />
+                                    <TableColumn fx:id="colPmSubtotal" prefWidth="95.0" text="Subtotal" />
+                                    <TableColumn fx:id="colPmStock" prefWidth="70.0" text="Stock BD" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+
+                        <VBox minWidth="350.0" prefWidth="375.0" spacing="10.0" styleClass="tarjeta">
+                           <children>
+                              <Label fx:id="lblModoPm" styleClass="tarjeta-titulo" text="Asignar material a proyecto" />
+                              <Label styleClass="tarjeta-subtitulo" text="Selecciona proyecto, material y cantidad utilizada" />
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Filtrar proyecto" />
+                                    <TextField fx:id="txtFiltroProyPm" promptText="Escribe nombre del proyecto..." />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Proyecto *" />
+                                    <ComboBox fx:id="cmbProyectoPm" maxWidth="1.7976931348623157E308" promptText="Seleccionar proyecto" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Filtrar material" />
+                                    <TextField fx:id="txtFiltroMatPm" promptText="Escribe nombre del material..." />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Material *" />
+                                    <ComboBox fx:id="cmbMaterialPm" maxWidth="1.7976931348623157E308" promptText="Seleccionar material" />
+                                 </children>
+                              </VBox>
+                              <VBox spacing="4.0">
+                                 <children>
+                                    <Label styleClass="etiqueta-campo" text="Cantidad *" />
+                                    <TextField fx:id="txtCantidadPm" promptText="Ej. 5" />
+                                 </children>
+                              </VBox>
+                              <CheckBox fx:id="chkDescontarStock" mnemonicParsing="false" selected="true" text="Descontar/reintegrar existencias automáticamente" />
+                              <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#filtrarPmPorProyecto" styleClass="boton-secundario, boton-compacto" text="Ver materiales del proyecto seleccionado" />
+                              <Region VBox.vgrow="ALWAYS" />
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#limpiarPm" styleClass="boton-secundario, boton-compacto" text="Nuevo" HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#asignarPm" styleClass="boton-exito, boton-compacto" text="Asignar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                              <HBox spacing="8.0">
+                                 <children>
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#actualizarPm" styleClass="boton-primario, boton-compacto" text="Actualizar cant." HBox.hgrow="ALWAYS" />
+                                    <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#eliminarPm" styleClass="boton-peligro, boton-compacto" text="Retirar" HBox.hgrow="ALWAYS" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
    </children>
-</HBox>
+</VBox>

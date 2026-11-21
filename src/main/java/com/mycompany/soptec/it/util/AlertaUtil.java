@@ -15,6 +15,10 @@ public final class AlertaUtil {
 
     private static final String CSS = "/soptecit/css/estilos.css";
 
+    public static final String MENSAJE_ERROR_INESPERADO =
+            "Ocurrió un problema inesperado al realizar la operación, pero el sistema continúa funcionando.\n"
+            + "Consulta el módulo 'Logs y pruebas' para revisar el detalle técnico.";
+
     private AlertaUtil() {
     }
 
@@ -32,30 +36,37 @@ public final class AlertaUtil {
 
     public static void errorControlado(String modulo, String operacion, Throwable ex) {
         if (ex instanceof SoptecException) {
-            SoptecException se = (SoptecException) ex;
-            String titulo;
-            switch (se.getCategoria()) {
-                case "VALIDACION":
-                    titulo = "Datos inválidos o incompletos";
-                    break;
-                case "INTEGRIDAD_REFERENCIAL":
-                    titulo = "Operación bloqueada por registros relacionados";
-                    break;
-                case "CONEXION_BD":
-                    titulo = "Sin conexión con la base de datos";
-                    break;
-                default:
-                    titulo = "Error al procesar la operación";
-                    break;
-            }
-            mostrar(Alert.AlertType.WARNING, titulo, se.getMessage()
-                    + "\n\nEl detalle técnico quedó registrado en el archivo de log.");
+            mostrar(Alert.AlertType.WARNING, tituloPara(ex), mensajeUsuario(ex));
         } else {
             AppLogger.registrarExcepcion(modulo, "ControladorUI", operacion, ex);
-            mostrar(Alert.AlertType.ERROR, "Error inesperado",
-                    "Ocurrió un problema inesperado al realizar la operación, pero el sistema continúa funcionando.\n"
-                    + "Consulta el módulo 'Logs y Pruebas' para revisar el detalle técnico.");
+            mostrar(Alert.AlertType.ERROR, tituloPara(ex), mensajeUsuario(ex));
         }
+    }
+
+    public static String tituloPara(Throwable ex) {
+        if (!(ex instanceof SoptecException)) {
+            return "Error inesperado";
+        }
+        String categoria = ((SoptecException) ex).getCategoria();
+        switch (categoria == null ? "" : categoria) {
+            case "VALIDACION":
+                return "Datos inválidos o incompletos";
+            case "INTEGRIDAD_REFERENCIAL":
+                return "Operación bloqueada por registros relacionados";
+            case "CONEXION_BD":
+                return "Sin conexión con la base de datos";
+            case "ARCHIVO":
+                return "Problema con el archivo de imagen";
+            default:
+                return "Error al procesar la operación";
+        }
+    }
+
+    public static String mensajeUsuario(Throwable ex) {
+        if (ex instanceof SoptecException && ex.getMessage() != null && !ex.getMessage().isBlank()) {
+            return ex.getMessage() + "\n\nEl detalle técnico quedó registrado en el archivo de log.";
+        }
+        return MENSAJE_ERROR_INESPERADO;
     }
 
     public static boolean confirmar(String titulo, String mensaje) {

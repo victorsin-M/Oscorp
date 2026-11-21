@@ -1,25 +1,36 @@
 package soptecit.controladores;
 
+import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Empleado;
 import com.mycompany.soptec.it.modelo.Material;
+import com.mycompany.soptec.it.modelo.MaterialProveedor;
+import com.mycompany.soptec.it.modelo.OrdenCompra;
+import com.mycompany.soptec.it.modelo.OrdenCompraMaterial;
 import com.mycompany.soptec.it.modelo.Proveedor;
 import com.mycompany.soptec.it.modelo.Proyecto;
 import com.mycompany.soptec.it.servicio.EmpleadoService;
+import com.mycompany.soptec.it.servicio.MaterialProveedorService;
 import com.mycompany.soptec.it.servicio.MaterialService;
+import com.mycompany.soptec.it.servicio.OrdenCompraService;
 import com.mycompany.soptec.it.servicio.ProveedorService;
+import com.mycompany.soptec.it.servicio.ProyectoMaterialService;
 import com.mycompany.soptec.it.servicio.ProyectoService;
 import com.mycompany.soptec.it.util.AlertaUtil;
+import com.mycompany.soptec.it.util.AppLogger;
+import com.mycompany.soptec.it.util.ComboBuscadorUtil;
 import com.mycompany.soptec.it.util.GestorImagenes;
 import com.mycompany.soptec.it.util.Validador;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,19 +50,25 @@ import soptecit.util.Mensajes;
 import soptecit.util.Tablas;
 
 /**
- * Controlador estilizado de Compras-Almacén.
- * Integra CRUD completo de Materiales y Proveedores, KPIs en vivo y ajustes reales de existencias.
+ * Controlador estilizado de Compras-Almacen.
+ * Integra CRUD completo en MySQL de Materiales, Proveedores, Movimientos (con proyecto_material),
+ * Ordenes de Compra + Partidas (orden_compra + orden_compra_material M:N) y Materiales <-> Proveedores (M:N).
  */
 public class ComprasAlmacenController implements Initializable {
 
     private static final String MOD_MAT = "Materiales";
     private static final String MOD_PROV = "Proveedores";
+    private static final String MOD_ORD = "OrdenesCompra";
+    private static final String MOD_MP = "MaterialProveedor";
     private static final NumberFormat MONEDA = NumberFormat.getCurrencyInstance(new Locale("es", "MX"));
 
     private final MaterialService materialService = new MaterialService();
     private final ProveedorService proveedorService = new ProveedorService();
     private final ProyectoService proyectoService = new ProyectoService();
     private final EmpleadoService empleadoService = new EmpleadoService();
+    private final OrdenCompraService ordenCompraService = new OrdenCompraService();
+    private final MaterialProveedorService matProvService = new MaterialProveedorService();
+    private final ProyectoMaterialService proyectoMaterialService = new ProyectoMaterialService();
 
     // KPIs
     @FXML private Label lblTotalMateriales;
@@ -110,24 +127,59 @@ public class ComprasAlmacenController implements Initializable {
     @FXML private TextArea txtObservacionesMov;
     @FXML private TableView<String[]> tblMovimientos;
 
-    // 4. Órdenes de compra
-    @FXML private TableView<String[]> tblOrdenes;
+    // 4. Ordenes de compra (M:N real)
+    @FXML private CheckBox chkInactivosOrden;
+    @FXML private TextField txtBuscarOrden;
+    @FXML private TableView<OrdenCompra> tblOrdenes;
+    @FXML private TableColumn<OrdenCompra, String> colOrdFolio;
+    @FXML private TableColumn<OrdenCompra, String> colOrdProveedor;
+    @FXML private TableColumn<OrdenCompra, String> colOrdProyecto;
+    @FXML private TableColumn<OrdenCompra, String> colOrdFecha;
+    @FXML private TableColumn<OrdenCompra, String> colOrdEntrega;
+    @FXML private TableColumn<OrdenCompra, String> colOrdTotal;
+    @FXML private TableColumn<OrdenCompra, String> colOrdEstado;
+    @FXML private TableColumn<OrdenCompra, String> colOrdActivo;
+
+    @FXML private Label lblModoOrden;
     @FXML private ComboBox<Proveedor> cmbProveedorOrden;
     @FXML private ComboBox<Proyecto> cmbProyectoOrden;
-    @FXML private DatePicker dpEntregaOrden;
+    @FXML private DatePicker dpFechaOrden;
+    @FXML private TextField txtTiempoEntregaOrden;
     @FXML private ComboBox<Material> cmbMaterialOrden;
     @FXML private TextField txtCantidadOrden;
-    @FXML private TableView<String[]> tblPartidas;
+    @FXML private TableView<OrdenCompraMaterial> tblPartidas;
+    @FXML private TableColumn<OrdenCompraMaterial, String> colPartMat;
+    @FXML private TableColumn<OrdenCompraMaterial, String> colPartCant;
+    @FXML private TableColumn<OrdenCompraMaterial, String> colPartPrecio;
+    @FXML private TableColumn<OrdenCompraMaterial, String> colPartImporte;
     @FXML private Label lblTotalOrden;
 
-    private double totalOrdenActual = 0;
-    private int consecutivoOrden = 46;
+    private final ObservableList<OrdenCompraMaterial> partidasActuales = FXCollections.observableArrayList();
+    private OrdenCompra ordenSeleccionada;
+
+    // 5. Materiales <-> Proveedores (M:N real)
+    @FXML private TextField txtBuscarMatProv;
+    @FXML private TableView<MaterialProveedor> tblMatProv;
+    @FXML private TableColumn<MaterialProveedor, String> colMpMaterial;
+    @FXML private TableColumn<MaterialProveedor, String> colMpPrecio;
+    @FXML private TableColumn<MaterialProveedor, String> colMpProveedor;
+    @FXML private TableColumn<MaterialProveedor, String> colMpTelefono;
+    @FXML private TableColumn<MaterialProveedor, String> colMpCorreo;
+    @FXML private Label lblModoMatProv;
+    @FXML private TextField txtFiltroMatMp;
+    @FXML private ComboBox<Material> cmbMaterialMp;
+    @FXML private TextField txtFiltroProvMp;
+    @FXML private ComboBox<Proveedor> cmbProveedorMp;
+
+    private MaterialProveedor matProvSeleccionado;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         inicializarMateriales();
         inicializarProveedores();
-        inicializarMovimientosYOrdenes();
+        inicializarMovimientos();
+        inicializarOrdenes();
+        inicializarMatProv();
         refrescarTodo();
     }
 
@@ -135,6 +187,8 @@ public class ComprasAlmacenController implements Initializable {
         cargarTablaMateriales(null);
         cargarTablaProveedores(null);
         cargarCombosAuxiliares();
+        cargarTablaOrdenes(null);
+        cargarTablaMatProv(null);
         actualizarKpis();
     }
 
@@ -153,7 +207,7 @@ public class ComprasAlmacenController implements Initializable {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             lblValorInventario.setText(MONEDA.format(valorTotal));
         } catch (Exception ex) {
-            // Ya reportado por los listados
+            AppLogger.registrarExcepcion(MOD_MAT, "ComprasAlmacenController", "ACTUALIZAR_KPIS", ex);
         }
     }
 
@@ -532,20 +586,13 @@ public class ComprasAlmacenController implements Initializable {
     }
 
     // =========================================================================
-    // 3 y 4. MOVIMIENTOS (ACTUALIZA STOCK EN MYSQL) Y ÓRDENES DE COMPRA
+    // 3. MOVIMIENTOS DE STOCK (TRANSACCIONAL CON proyecto_material EN SALIDAS)
     // =========================================================================
-    private void inicializarMovimientosYOrdenes() {
+    private void inicializarMovimientos() {
         spnCantidadMov.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 1));
         dpFechaMov.setValue(LocalDate.now());
-        dpEntregaOrden.setValue(LocalDate.now().plusDays(5));
-
         rbSalida.selectedProperty().addListener((o, a, salida) -> cmbProyectoMov.setDisable(!salida));
-
         Tablas.cargar(tblMovimientos, new String[][]{});
-        Tablas.cargar(tblPartidas, new String[][]{});
-        Tablas.cargar(tblOrdenes, new String[][]{
-            {"OC-0045", "Proveedor general", "PRY-0001", LocalDate.now().plusDays(3).toString(), "$18,400.00", "Solicitada"}
-        });
     }
 
     private void cargarCombosAuxiliares() {
@@ -553,9 +600,11 @@ public class ComprasAlmacenController implements Initializable {
             List<Material> mats = materialService.listar(false);
             cmbMaterialMov.setItems(FXCollections.observableArrayList(mats));
             cmbMaterialOrden.setItems(FXCollections.observableArrayList(mats));
+            ComboBuscadorUtil.configurar(cmbMaterialMp, txtFiltroMatMp, mats, Material::toString);
 
             List<Proveedor> provs = proveedorService.listar(false);
             cmbProveedorOrden.setItems(FXCollections.observableArrayList(provs));
+            ComboBuscadorUtil.configurar(cmbProveedorMp, txtFiltroProvMp, provs, Proveedor::toString);
 
             List<Proyecto> proys = proyectoService.listar(false);
             cmbProyectoMov.setItems(FXCollections.observableArrayList(proys));
@@ -564,7 +613,7 @@ public class ComprasAlmacenController implements Initializable {
             List<Empleado> emps = empleadoService.listar(false);
             cmbResponsableMov.setItems(FXCollections.observableArrayList(emps));
         } catch (Exception ex) {
-            // Ya reportado si falla BD
+            AppLogger.registrarExcepcion(MOD_MAT, "ComprasAlmacenController", "CARGAR_COMBOS_AUXILIARES", ex);
         }
     }
 
@@ -577,20 +626,35 @@ public class ComprasAlmacenController implements Initializable {
         }
         int cantidad = spnCantidadMov.getValue();
         boolean esEntrada = rbEntrada.isSelected();
-        int nuevaExistencia = esEntrada ? mat.getExistencias() + cantidad : mat.getExistencias() - cantidad;
-        if (nuevaExistencia < 0) {
-            Mensajes.error("Stock insuficiente",
-                    "No hay existencias suficientes de '" + mat.getDescripcionMaterial()
-                    + "' (actual: " + mat.getExistencias() + ").");
-            return;
-        }
         try {
-            mat.setExistencias(nuevaExistencia);
-            materialService.actualizar(mat);
+            int nuevaExistencia;
+            String ref;
+            if (esEntrada) {
+                nuevaExistencia = mat.getExistencias() + cantidad;
+                mat.setExistencias(nuevaExistencia);
+                materialService.actualizar(mat);
+                ref = "Recepción almacén";
+            } else {
+                Proyecto proyDestino = cmbProyectoMov.getValue();
+                if (proyDestino != null) {
+                    proyectoMaterialService.asignarConDescuentoStock(
+                            proyDestino.getIdProyecto(), mat.getIdMaterial(), BigDecimal.valueOf(cantidad), false);
+                    nuevaExistencia = mat.getExistencias() - cantidad;
+                    ref = proyDestino.getNombreProyecto() + " (proyecto_material)";
+                } else {
+                    nuevaExistencia = mat.getExistencias() - cantidad;
+                    if (nuevaExistencia < 0) {
+                        throw new ValidacionException(MOD_MAT, "REGISTRAR_MOVIMIENTO",
+                                "No hay existencias suficientes de '" + mat.getDescripcionMaterial()
+                                + "' (actual: " + mat.getExistencias() + ").");
+                    }
+                    mat.setExistencias(nuevaExistencia);
+                    materialService.actualizar(mat);
+                    ref = "Salida general";
+                }
+            }
 
             String tipo = esEntrada ? "Entrada" : "Salida";
-            String ref = esEntrada ? "Recepción almacén"
-                    : (cmbProyectoMov.getValue() != null ? cmbProyectoMov.getValue().getNombreProyecto() : "Proyecto");
             String resp = cmbResponsableMov.getValue() != null ? cmbResponsableMov.getValue().getNombre() : "Almacén";
 
             tblMovimientos.getItems().add(0, new String[]{
@@ -606,68 +670,442 @@ public class ComprasAlmacenController implements Initializable {
         }
     }
 
+    // =========================================================================
+    // 4. ÓRDENES DE COMPRA + PARTIDAS (orden_compra + orden_compra_material M:N)
+    // =========================================================================
+    private void inicializarOrdenes() {
+        dpFechaOrden.setValue(LocalDate.now());
+        txtTiempoEntregaOrden.setText("5 días");
+
+        colOrdFolio.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFolio()));
+        colOrdProveedor.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProveedorDescriptivo()));
+        colOrdProyecto.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProyectoDescriptivo()));
+        colOrdFecha.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getFechaOrden() != null ? d.getValue().getFechaOrden().toString() : ""));
+        colOrdEntrega.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getTiempoEntrega() != null ? d.getValue().getTiempoEntrega() : "—"));
+        colOrdTotal.setCellValueFactory(d -> new SimpleStringProperty(MONEDA.format(d.getValue().getTotalCompra())));
+        colOrdEstado.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEstadoOrden()));
+        colOrdEstado.setCellFactory(c -> Tablas.crearCeldaEstado());
+        colOrdActivo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getActivoTexto()));
+        colOrdActivo.setCellFactory(c -> Tablas.crearCeldaEstado());
+        tblOrdenes.setPlaceholder(new Label("No hay órdenes de compra registradas"));
+
+        colPartMat.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescripcionMaterial()));
+        colPartCant.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getCantidad().stripTrailingZeros().toPlainString()));
+        colPartPrecio.setCellValueFactory(d -> new SimpleStringProperty(MONEDA.format(d.getValue().getPrecioCosto())));
+        colPartImporte.setCellValueFactory(d -> new SimpleStringProperty(MONEDA.format(d.getValue().getImporte())));
+        tblPartidas.setItems(partidasActuales);
+        tblPartidas.setPlaceholder(new Label("Agrega materiales a la orden"));
+
+        tblOrdenes.getSelectionModel().selectedItemProperty().addListener((obs, a, nueva) -> {
+            if (nueva != null) {
+                cargarOrdenEnFormulario(nueva.getIdOrdenCompra());
+            }
+        });
+    }
+
     @FXML
-    private void agregarPartida(ActionEvent event) {
-        Material mat = cmbMaterialOrden.getValue();
-        if (mat == null || txtCantidadOrden.getText().trim().isEmpty()) {
-            return;
-        }
+    private void cargarTablaOrdenes(ActionEvent event) {
         try {
-            int cant = Integer.parseInt(txtCantidadOrden.getText().trim());
-            if (cant <= 0) {
+            tblOrdenes.setItems(FXCollections.observableArrayList(
+                    ordenCompraService.listar(chkInactivosOrden.isSelected())));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "LISTAR_ORDENES_COMPRA", ex);
+        }
+    }
+
+    @FXML
+    private void buscarOrdenes(ActionEvent event) {
+        try {
+            tblOrdenes.setItems(FXCollections.observableArrayList(
+                    ordenCompraService.buscar(txtBuscarOrden.getText(), chkInactivosOrden.isSelected())));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "BUSCAR_ORDENES_COMPRA", ex);
+        }
+    }
+
+    private void cargarOrdenEnFormulario(int idOrden) {
+        try {
+            OrdenCompra completa = ordenCompraService.consultarPorId(idOrden);
+            if (completa == null) {
                 return;
             }
-            double precio = mat.getPrecioUnitario();
-            double importe = cant * precio;
-            totalOrdenActual += importe;
-            tblPartidas.getItems().add(new String[]{
-                mat.getDescripcionMaterial(), String.valueOf(cant), MONEDA.format(precio), MONEDA.format(importe)
-            });
-            lblTotalOrden.setText(MONEDA.format(totalOrdenActual));
-            txtCantidadOrden.clear();
-        } catch (NumberFormatException ex) {
-            Mensajes.error("Cantidad inválida", "Captura un número entero positivo.");
+            ordenSeleccionada = completa;
+            lblModoOrden.setText("Editando " + completa.getFolio());
+            ComboBuscadorUtil.seleccionarPorPredicado(cmbProyectoOrden,
+                    p -> p.getIdProyecto() == completa.getIdProyecto());
+            if (completa.getIdProveedor() != null) {
+                ComboBuscadorUtil.seleccionarPorPredicado(cmbProveedorOrden,
+                        pr -> pr.getIdProveedor() == completa.getIdProveedor());
+            } else {
+                cmbProveedorOrden.setValue(null);
+            }
+            dpFechaOrden.setValue(completa.getFechaOrden());
+            txtTiempoEntregaOrden.setText(completa.getTiempoEntrega() == null ? "" : completa.getTiempoEntrega());
+            partidasActuales.setAll(completa.getPartidas());
+            recalcularTotalOrden();
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "CONSULTAR_ORDEN_COMPRA", ex);
         }
+    }
+
+    @FXML
+    private void agregarPartida(ActionEvent event) {
+        try {
+            Material mat = cmbMaterialOrden.getValue();
+            if (mat == null) {
+                throw new ValidacionException(MOD_ORD, "AGREGAR_PARTIDA", "Selecciona un material de la lista.");
+            }
+            BigDecimal cant = Validador.parsearDecimalPositivo(
+                    txtCantidadOrden.getText(), "Cantidad", MOD_ORD, "AGREGAR_PARTIDA");
+
+            OrdenCompraMaterial existente = null;
+            for (OrdenCompraMaterial p : partidasActuales) {
+                if (p.getIdMaterial() == mat.getIdMaterial()) {
+                    existente = p;
+                    break;
+                }
+            }
+            if (existente != null) {
+                existente.setCantidad(existente.getCantidad().add(cant));
+                tblPartidas.refresh();
+            } else {
+                partidasActuales.add(new OrdenCompraMaterial(
+                        0, mat.getIdMaterial(), cant, mat.getDescripcionMaterial(), mat.getPrecioCosto()));
+            }
+            txtCantidadOrden.clear();
+            recalcularTotalOrden();
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "AGREGAR_PARTIDA", ex);
+        }
+    }
+
+    @FXML
+    private void quitarPartida(ActionEvent event) {
+        OrdenCompraMaterial sel = tblPartidas.getSelectionModel().getSelectedItem();
+        if (sel != null) {
+            partidasActuales.remove(sel);
+            recalcularTotalOrden();
+        }
+    }
+
+    private void recalcularTotalOrden() {
+        BigDecimal total = partidasActuales.stream()
+                .map(OrdenCompraMaterial::getImporte)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        lblTotalOrden.setText(MONEDA.format(total));
     }
 
     @FXML
     private void generarOrden(ActionEvent event) {
-        Proveedor prov = cmbProveedorOrden.getValue();
-        if (prov == null || tblPartidas.getItems().isEmpty()) {
-            Mensajes.error("Faltan datos", "Selecciona el proveedor y agrega al menos una partida.");
+        try {
+            OrdenCompra nueva = construirOrdenDesdeFormulario(new OrdenCompra(), "CREAR_ORDEN_COMPRA");
+            OrdenCompra creada = ordenCompraService.crearConPartidas(
+                    nueva, new ArrayList<>(partidasActuales), false);
+            AlertaUtil.info("Orden de compra registrada",
+                    "Se guardó " + creada.getFolio() + " con " + creada.getPartidas().size()
+                    + " partidas por un total de " + MONEDA.format(creada.getTotalCompra()) + ".");
+            limpiarOrden(null);
+            cargarTablaOrdenes(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "CREAR_ORDEN_COMPRA", ex);
+        }
+    }
+
+    @FXML
+    private void actualizarOrden(ActionEvent event) {
+        if (ordenSeleccionada == null) {
+            AlertaUtil.advertencia("Selecciona una orden", "Elige una orden de compra de la tabla para actualizarla.");
             return;
         }
-        String proyTxt = cmbProyectoOrden.getValue() != null ? cmbProyectoOrden.getValue().getNombreProyecto() : "Stock general";
-        String entrega = dpEntregaOrden.getValue() != null ? dpEntregaOrden.getValue().toString() : "";
-        tblOrdenes.getItems().add(0, new String[]{
-            String.format("OC-%04d", consecutivoOrden++),
-            prov.getNombreProveedor(),
-            proyTxt,
-            entrega,
-            MONEDA.format(totalOrdenActual),
-            "Solicitada"
-        });
-        tblPartidas.getItems().clear();
-        totalOrdenActual = 0;
-        lblTotalOrden.setText("$0.00");
-        Mensajes.info("Orden generada", "La orden de compra para " + prov.getNombreProveedor() + " quedó registrada.");
+        try {
+            OrdenCompra editada = construirOrdenDesdeFormulario(ordenSeleccionada, "ACTUALIZAR_ORDEN_COMPRA");
+            OrdenCompra actualizada = ordenCompraService.actualizarConPartidas(
+                    editada, new ArrayList<>(partidasActuales));
+            AlertaUtil.info("Orden actualizada",
+                    "Se actualizó " + actualizada.getFolio() + " (Total: " + MONEDA.format(actualizada.getTotalCompra()) + ").");
+            limpiarOrden(null);
+            cargarTablaOrdenes(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "ACTUALIZAR_ORDEN_COMPRA", ex);
+        }
     }
 
     @FXML
     private void registrarRecepcion(ActionEvent event) {
-        String[] orden = tblOrdenes.getSelectionModel().getSelectedItem();
-        if (orden != null) {
-            orden[5] = "Recibida";
-            tblOrdenes.refresh();
+        OrdenCompra orden = tblOrdenes.getSelectionModel().getSelectedItem();
+        if (orden == null) {
+            AlertaUtil.advertencia("Selecciona una orden", "Elige la orden de compra recibida en la tabla.");
+            return;
+        }
+        if (!AlertaUtil.confirmar("Registrar recepción de orden",
+                "¿Confirmas la recepción de " + orden.getFolio()
+                + "? Esto incrementará automáticamente las existencias de sus materiales en MySQL.")) {
+            return;
+        }
+        try {
+            ordenCompraService.recibirOrden(orden.getIdOrdenCompra(), false);
+            AlertaUtil.info("Recepción registrada",
+                    "La orden " + orden.getFolio() + " pasó a 'Recibida' y el inventario fue actualizado.");
+            limpiarOrden(null);
+            refrescarTodo();
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "RECIBIR_ORDEN_COMPRA", ex);
         }
     }
 
     @FXML
     private void cancelarOrden(ActionEvent event) {
-        String[] orden = tblOrdenes.getSelectionModel().getSelectedItem();
-        if (orden != null && Mensajes.confirmar("Cancelar orden", "¿Cancelar la orden " + orden[0] + "?")) {
-            orden[5] = "Cancelada";
-            tblOrdenes.refresh();
+        OrdenCompra orden = tblOrdenes.getSelectionModel().getSelectedItem();
+        if (orden == null) {
+            AlertaUtil.advertencia("Selecciona una orden", "Elige una orden de compra de la tabla.");
+            return;
         }
+        if (!AlertaUtil.confirmar("Cancelar orden", "¿Cancelar la orden " + orden.getFolio() + "?")) {
+            return;
+        }
+        try {
+            ordenCompraService.cancelarOrden(orden.getIdOrdenCompra());
+            AlertaUtil.info("Orden cancelada", "La orden " + orden.getFolio() + " quedó marcada como Cancelada.");
+            limpiarOrden(null);
+            cargarTablaOrdenes(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "CANCELAR_ORDEN_COMPRA", ex);
+        }
+    }
+
+    @FXML
+    private void desactivarOrden(ActionEvent event) {
+        OrdenCompra orden = tblOrdenes.getSelectionModel().getSelectedItem();
+        if (orden == null) {
+            AlertaUtil.advertencia("Selecciona una orden", "Elige una orden de la tabla.");
+            return;
+        }
+        try {
+            ordenCompraService.desactivar(orden.getIdOrdenCompra());
+            AlertaUtil.info("Orden desactivada", "La orden " + orden.getFolio() + " quedó inactiva.");
+            limpiarOrden(null);
+            cargarTablaOrdenes(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "DESACTIVAR_ORDEN_COMPRA", ex);
+        }
+    }
+
+    @FXML
+    private void reactivarOrden(ActionEvent event) {
+        OrdenCompra orden = tblOrdenes.getSelectionModel().getSelectedItem();
+        if (orden == null) {
+            AlertaUtil.advertencia("Selecciona una orden", "Marca 'Mostrar inactivas' y elige una orden.");
+            return;
+        }
+        try {
+            ordenCompraService.reactivar(orden.getIdOrdenCompra());
+            AlertaUtil.info("Orden reactivada", "La orden " + orden.getFolio() + " volvió a estar activa.");
+            limpiarOrden(null);
+            cargarTablaOrdenes(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "REACTIVAR_ORDEN_COMPRA", ex);
+        }
+    }
+
+    @FXML
+    private void eliminarFisicoOrden(ActionEvent event) {
+        OrdenCompra orden = tblOrdenes.getSelectionModel().getSelectedItem();
+        if (orden == null) {
+            AlertaUtil.advertencia("Selecciona una orden", "Elige una orden de la tabla.");
+            return;
+        }
+        if (!AlertaUtil.confirmar("Eliminar orden definitivamente",
+                "¿Eliminar permanentemente " + orden.getFolio() + " junto con sus partidas?")) {
+            return;
+        }
+        try {
+            ordenCompraService.eliminarFisico(orden.getIdOrdenCompra());
+            AlertaUtil.info("Orden eliminada", "La orden y sus partidas fueron eliminadas de la base de datos.");
+            limpiarOrden(null);
+            cargarTablaOrdenes(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_ORD, "ELIMINAR_FISICO_ORDEN_COMPRA", ex);
+        }
+    }
+
+    @FXML
+    private void limpiarOrden(ActionEvent event) {
+        ordenSeleccionada = null;
+        lblModoOrden.setText("Nueva orden de compra");
+        cmbProyectoOrden.setValue(null);
+        cmbProveedorOrden.setValue(null);
+        dpFechaOrden.setValue(LocalDate.now());
+        txtTiempoEntregaOrden.setText("5 días");
+        cmbMaterialOrden.setValue(null);
+        txtCantidadOrden.clear();
+        partidasActuales.clear();
+        recalcularTotalOrden();
+        tblOrdenes.getSelectionModel().clearSelection();
+    }
+
+    private OrdenCompra construirOrdenDesdeFormulario(OrdenCompra base, String op) throws ValidacionException {
+        Proyecto proy = cmbProyectoOrden.getValue();
+        if (proy == null) {
+            throw new ValidacionException(MOD_ORD, op, "Selecciona el proyecto para la orden de compra.");
+        }
+        Proveedor prov = cmbProveedorOrden.getValue();
+        base.setIdProyecto(proy.getIdProyecto());
+        base.setIdProveedor(prov != null ? prov.getIdProveedor() : null);
+        base.setFechaOrden(dpFechaOrden.getValue() != null ? dpFechaOrden.getValue() : LocalDate.now());
+        base.setTiempoEntrega(txtTiempoEntregaOrden.getText());
+        if (base.getEstadoOrden() == null || base.getEstadoOrden().isBlank()) {
+            base.setEstadoOrden("Solicitada");
+        }
+        return base;
+    }
+
+    // =========================================================================
+    // 5. MATERIALES <-> PROVEEDORES (material_proveedor M:N)
+    // =========================================================================
+    private void inicializarMatProv() {
+        colMpMaterial.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescripcionMaterial()));
+        colMpPrecio.setCellValueFactory(d -> new SimpleStringProperty(MONEDA.format(d.getValue().getPrecioCosto())));
+        colMpProveedor.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombreProveedor()));
+        colMpTelefono.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTelefonoProveedor()));
+        colMpCorreo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCorreoProveedor()));
+        tblMatProv.setPlaceholder(new Label("No hay relaciones material-proveedor registradas"));
+
+        tblMatProv.getSelectionModel().selectedItemProperty().addListener((obs, a, nuevo) -> {
+            if (nuevo != null) {
+                matProvSeleccionado = nuevo;
+                lblModoMatProv.setText("Editando relación M:N");
+                txtFiltroMatMp.clear();
+                txtFiltroProvMp.clear();
+                ComboBuscadorUtil.seleccionarPorPredicado(cmbMaterialMp, m -> m.getIdMaterial() == nuevo.getIdMaterial());
+                ComboBuscadorUtil.seleccionarPorPredicado(cmbProveedorMp, p -> p.getIdProveedor() == nuevo.getIdProveedor());
+            }
+        });
+    }
+
+    @FXML
+    private void cargarTablaMatProv(ActionEvent event) {
+        try {
+            tblMatProv.setItems(FXCollections.observableArrayList(matProvService.listarTodos()));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "LISTAR_MATERIAL_PROVEEDOR", ex);
+        }
+    }
+
+    @FXML
+    private void buscarMatProv(ActionEvent event) {
+        try {
+            tblMatProv.setItems(FXCollections.observableArrayList(
+                    matProvService.buscar(txtBuscarMatProv.getText())));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "BUSCAR_MATERIAL_PROVEEDOR", ex);
+        }
+    }
+
+    @FXML
+    private void filtrarPorMaterialMp(ActionEvent event) {
+        Material m = cmbMaterialMp.getValue();
+        if (m == null) {
+            AlertaUtil.advertencia("Selecciona un material", "Elige primero un material en el combo del formulario.");
+            return;
+        }
+        try {
+            tblMatProv.setItems(FXCollections.observableArrayList(
+                    matProvService.listarPorMaterial(m.getIdMaterial())));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "LISTAR_POR_MATERIAL", ex);
+        }
+    }
+
+    @FXML
+    private void filtrarPorProveedorMp(ActionEvent event) {
+        Proveedor p = cmbProveedorMp.getValue();
+        if (p == null) {
+            AlertaUtil.advertencia("Selecciona un proveedor", "Elige primero un proveedor en el combo del formulario.");
+            return;
+        }
+        try {
+            tblMatProv.setItems(FXCollections.observableArrayList(
+                    matProvService.listarPorProveedor(p.getIdProveedor())));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "LISTAR_POR_PROVEEDOR", ex);
+        }
+    }
+
+    @FXML
+    private void asociarMatProv(ActionEvent event) {
+        try {
+            Material m = cmbMaterialMp.getValue();
+            Proveedor p = cmbProveedorMp.getValue();
+            if (m == null || p == null) {
+                throw new ValidacionException(MOD_MP, "ASOCIAR_MATERIAL_PROVEEDOR",
+                        "Selecciona tanto un material como un proveedor de las listas desplegables.");
+            }
+            matProvService.asociar(m.getIdMaterial(), p.getIdProveedor());
+            AlertaUtil.info("Relación registrada",
+                    "Se asoció '" + m.getDescripcionMaterial() + "' con '" + p.getNombreProveedor() + "'.");
+            limpiarMatProv(null);
+            cargarTablaMatProv(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "ASOCIAR_MATERIAL_PROVEEDOR", ex);
+        }
+    }
+
+    @FXML
+    private void actualizarMatProv(ActionEvent event) {
+        if (matProvSeleccionado == null) {
+            AlertaUtil.advertencia("Selecciona una relación", "Elige una fila de la tabla para actualizarla.");
+            return;
+        }
+        try {
+            Material m = cmbMaterialMp.getValue();
+            Proveedor p = cmbProveedorMp.getValue();
+            if (m == null || p == null) {
+                throw new ValidacionException(MOD_MP, "ACTUALIZAR_MATERIAL_PROVEEDOR",
+                        "Selecciona el nuevo material y proveedor.");
+            }
+            matProvService.actualizarAsociacion(
+                    matProvSeleccionado.getIdMaterial(), matProvSeleccionado.getIdProveedor(),
+                    m.getIdMaterial(), p.getIdProveedor());
+            AlertaUtil.info("Relación actualizada", "La asociación material-proveedor fue actualizada.");
+            limpiarMatProv(null);
+            cargarTablaMatProv(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "ACTUALIZAR_MATERIAL_PROVEEDOR", ex);
+        }
+    }
+
+    @FXML
+    private void eliminarMatProv(ActionEvent event) {
+        if (matProvSeleccionado == null) {
+            AlertaUtil.advertencia("Selecciona una relación", "Elige una fila de la tabla para desvincularla.");
+            return;
+        }
+        if (!AlertaUtil.confirmar("Desvincular material y proveedor",
+                "¿Eliminar la relación entre '" + matProvSeleccionado.getDescripcionMaterial()
+                + "' y '" + matProvSeleccionado.getNombreProveedor() + "'?")) {
+            return;
+        }
+        try {
+            matProvService.eliminar(matProvSeleccionado.getIdMaterial(), matProvSeleccionado.getIdProveedor());
+            AlertaUtil.info("Relación eliminada", "Se desvinculó el proveedor del material.");
+            limpiarMatProv(null);
+            cargarTablaMatProv(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_MP, "ELIMINAR_MATERIAL_PROVEEDOR", ex);
+        }
+    }
+
+    @FXML
+    private void limpiarMatProv(ActionEvent event) {
+        matProvSeleccionado = null;
+        lblModoMatProv.setText("Asociar material y proveedor");
+        txtFiltroMatMp.clear();
+        txtFiltroProvMp.clear();
+        cmbMaterialMp.setValue(null);
+        cmbProveedorMp.setValue(null);
+        tblMatProv.getSelectionModel().clearSelection();
     }
 }

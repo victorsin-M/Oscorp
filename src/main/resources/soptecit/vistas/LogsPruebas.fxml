@@ -4,6 +4,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -15,21 +16,29 @@
       <!-- Tarjeta de pruebas controladas -->
       <VBox spacing="12.0" styleClass="tarjeta">
          <children>
-            <VBox>
-               <children>
-                  <Label styleClass="tarjeta-titulo" text="Pruebas controladas de excepciones y tolerancia a fallos" />
-                  <Label styleClass="tarjeta-subtitulo" text="Valida que el sistema maneje errores de captura, rollback transaccional, llaves foráneas y caídas de MySQL sin cerrarse" />
-               </children>
-            </VBox>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#simularErrorValidacion" styleClass="boton-primario" text="Simular error de validación" />
-                  <Button mnemonicParsing="false" onAction="#simularRollback" styleClass="boton-naranja" text="Simular transacción con Rollback" />
-                  <Button mnemonicParsing="false" onAction="#simularIntegridad" styleClass="boton-peligro" text="Simular integridad referencial" />
+                  <VBox>
+                     <children>
+                        <Label styleClass="tarjeta-titulo" text="Pruebas controladas de excepciones, transacciones y tolerancia a fallos" />
+                        <Label styleClass="tarjeta-subtitulo" text="Comprueba las 5 categorías de error y el rollback atómico en operaciones multi-tabla sin cerrar la aplicación" />
+                     </children>
+                  </VBox>
                   <Region HBox.hgrow="ALWAYS" />
                   <CheckBox fx:id="chkSimularDesconexion" mnemonicParsing="false" onAction="#toggleSimularDesconexion" text="Simular caída de conexión MySQL" />
                </children>
             </HBox>
+            <FlowPane hgap="8.0" vgap="8.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#simularErrorValidacion" styleClass="boton-primario, boton-compacto" text="Error de validación" />
+                  <Button mnemonicParsing="false" onAction="#simularErrorArchivo" styleClass="boton-secundario, boton-compacto" text="Error de archivo/imagen" />
+                  <Button mnemonicParsing="false" onAction="#simularIntegridad" styleClass="boton-peligro, boton-compacto" text="Integridad referencial" />
+                  <Button mnemonicParsing="false" onAction="#simularRollback" styleClass="boton-naranja, boton-compacto" text="Rollback Cliente + Teléfono" />
+                  <Button mnemonicParsing="false" onAction="#simularRollbackCita" styleClass="boton-naranja, boton-compacto" text="Rollback Cita + Levantamiento" />
+                  <Button mnemonicParsing="false" onAction="#simularRollbackVentaProyecto" styleClass="boton-naranja, boton-compacto" text="Rollback Proyecto + Mat. + Pago" />
+                  <Button mnemonicParsing="false" onAction="#simularRollbackOrden" styleClass="boton-naranja, boton-compacto" text="Rollback Orden + Partidas" />
+               </children>
+            </FlowPane>
          </children>
       </VBox>
 

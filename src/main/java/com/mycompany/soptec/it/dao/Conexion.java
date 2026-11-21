@@ -33,6 +33,10 @@ public class Conexion {
         simularFalloConexion = false;
     }
 
+    public static String getUrlActual() {
+        return urlActual;
+    }
+
     public static boolean isSimularFalloConexion() {
         return simularFalloConexion;
     }
@@ -106,7 +110,9 @@ public class Conexion {
                 con.setAutoCommit(true);
                 con.close();
             }
-        } catch (SQLException ignored) {
+        } catch (SQLException ex) {
+            AppLogger.registrarError("Sistema", "Conexion", "CERRAR_CONEXION", "OPERACION_BD",
+                    "Error al cerrar conexion JDBC", ex);
         }
     }
 }

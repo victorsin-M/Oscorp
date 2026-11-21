@@ -157,7 +157,16 @@
             <VBox spacing="4.0" VBox.vgrow="ALWAYS">
                <children>
                   <Label styleClass="etiqueta-campo" text="Observaciones / necesidades del cliente" />
-                  <TextArea fx:id="txtObservaciones" minHeight="75.0" prefRowCount="3" promptText="Describe el servicio solicitado o notas de la visita..." wrapText="true" VBox.vgrow="ALWAYS" />
+                  <TextArea fx:id="txtObservaciones" minHeight="58.0" prefRowCount="2" promptText="Describe el servicio solicitado o notas de la visita..." wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+
+            <Separator styleClass="separador" />
+            <CheckBox fx:id="chkIncluirLevantamiento" mnemonicParsing="false" text="Registrar levantamiento inicial conjuntamente (transaccional)" />
+            <VBox fx:id="panelLevConjunto" spacing="4.0">
+               <children>
+                  <Label styleClass="etiqueta-campo" text="Proyecto vinculado al levantamiento" />
+                  <ComboBox fx:id="cmbProyectoCita" maxWidth="1.7976931348623157E308" promptText="Seleccionar proyecto activo" />
                </children>
             </VBox>
 

@@ -3,6 +3,8 @@ package com.mycompany.soptec.it.dao;
 import com.mycompany.soptec.it.excepciones.OperacionBDException;
 import com.mycompany.soptec.it.excepciones.SoptecException;
 import com.mycompany.soptec.it.modelo.Cita;
+import com.mycompany.soptec.it.modelo.Levantamiento;
+import com.mycompany.soptec.it.util.AppLogger;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -21,10 +23,19 @@ public class CitaDao {
     private static final String MODULO = "Citas";
 
     public Cita crear(Cita c) throws SoptecException {
+        try (Connection con = Conexion.conectarStrict(MODULO, "CREAR_CITA")) {
+            int id = crear(con, c);
+            return obtenerPorId(id);
+        } catch (SQLException ex) {
+            throw DaoSupport.traducirYRegistrar(MODULO, "CitaDao", "CREAR_CITA",
+                    "No se pudo agendar la cita.", ex);
+        }
+    }
+
+    public int crear(Connection con, Cita c) throws SQLException, OperacionBDException {
         String sql = "INSERT INTO cita (fecha_cita, hora_cita, estado_cita, observaciones, id_cliente, activo) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection con = Conexion.conectarStrict(MODULO, "CREAR_CITA");
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, Date.valueOf(c.getFechaCita()));
             ps.setTime(2, Time.valueOf(c.getHoraCita()));
             ps.setString(3, c.getEstadoCita());
@@ -34,14 +45,60 @@ public class CitaDao {
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
-                    return obtenerPorId(keys.getInt(1));
+                    int id = keys.getInt(1);
+                    c.setIdCita(id);
+                    return id;
                 }
                 throw new OperacionBDException(MODULO, "CREAR_CITA",
                         "La cita se registró pero no se obtuvo su identificador.");
             }
+        }
+    }
+
+    /**
+     * Transaccion multi-tabla: registra una cita y su levantamiento/servicio tecnico asociado.
+     * Si falla el registro relacionado, ejecuta rollback completo para evitar registros parciales.
+     */
+    public Cita crearConLevantamientoInicial(Cita cita, Levantamiento levantamiento, boolean simularFallo)
+            throws SoptecException {
+        Connection con = null;
+        try {
+            con = Conexion.conectarStrict(MODULO, "CREAR_CITA_CON_LEVANTAMIENTO");
+            con.setAutoCommit(false);
+
+            int idCita = crear(con, cita);
+
+            if (simularFallo) {
+                throw new SQLException("Fallo simulado al registrar levantamiento vinculado a la cita para comprobar rollback.",
+                        "45000", 9997);
+            }
+
+            if (levantamiento != null) {
+                String sqlLev = "INSERT INTO levantamiento (fecha_visita, croquis, observaciones_tecnicas, activo, id_cita, id_proyecto) "
+                        + "VALUES (?, ?, ?, 1, ?, ?)";
+                try (PreparedStatement psLev = con.prepareStatement(sqlLev)) {
+                    psLev.setDate(1, Date.valueOf(levantamiento.getFechaVisita()));
+                    DaoSupport.setNullableString(psLev, 2, levantamiento.getCroquis());
+                    DaoSupport.setNullableString(psLev, 3, levantamiento.getObservacionesTecnicas());
+                    psLev.setInt(4, idCita);
+                    psLev.setInt(5, levantamiento.getIdProyecto());
+                    psLev.executeUpdate();
+                }
+            }
+
+            con.commit();
+            AppLogger.registrarInfo(MODULO, "CitaDao", "CREAR_CITA_CON_LEVANTAMIENTO",
+                    "Cita ID=" + idCita + " registrada conjuntamente con su levantamiento.");
+            return obtenerPorId(idCita);
         } catch (SQLException ex) {
-            throw DaoSupport.traducirYRegistrar(MODULO, "CitaDao", "CREAR_CITA",
-                    "No se pudo agendar la cita.", ex);
+            Conexion.revertirSilencioso(con, MODULO, "CREAR_CITA_CON_LEVANTAMIENTO");
+            throw DaoSupport.traducirYRegistrar(MODULO, "CitaDao", "CREAR_CITA_CON_LEVANTAMIENTO",
+                    "No se pudo completar el registro de la cita y su levantamiento relacionado. Se revirtieron los cambios.", ex);
+        } catch (SoptecException ex) {
+            Conexion.revertirSilencioso(con, MODULO, "CREAR_CITA_CON_LEVANTAMIENTO");
+            throw ex;
+        } finally {
+            Conexion.cerrarSilencioso(con);
         }
     }
 

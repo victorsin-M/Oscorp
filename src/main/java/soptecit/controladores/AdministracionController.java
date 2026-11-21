@@ -1,11 +1,15 @@
 package soptecit.controladores;
 
+import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Empleado;
+import com.mycompany.soptec.it.modelo.Pago;
 import com.mycompany.soptec.it.modelo.Proyecto;
 import com.mycompany.soptec.it.servicio.EmpleadoService;
+import com.mycompany.soptec.it.servicio.PagoService;
 import com.mycompany.soptec.it.servicio.ProyectoService;
 import com.mycompany.soptec.it.util.AlertaUtil;
 import com.mycompany.soptec.it.util.AppLogger;
+import com.mycompany.soptec.it.util.ComboBuscadorUtil;
 import com.mycompany.soptec.it.util.GestorImagenes;
 import com.mycompany.soptec.it.util.Validador;
 import java.math.BigDecimal;
@@ -34,16 +38,18 @@ import soptecit.util.Tablas;
 
 /**
  * Controlador estilizado de Administración.
- * Integra CRUD completo de Empleados y gestión de expedientes/cierre de Proyectos en MySQL.
+ * Integra CRUD completo de Empleados, Expedientes/Cierre de Proyectos y CRUD real de Pagos en MySQL.
  */
 public class AdministracionController implements Initializable {
 
     private static final String MOD_EMP = "Empleados";
     private static final String MOD_ADM = "Administracion";
+    private static final String MOD_PAG = "Pagos";
     private static final NumberFormat MONEDA = NumberFormat.getCurrencyInstance(new Locale("es", "MX"));
 
     private final EmpleadoService empleadoService = new EmpleadoService();
     private final ProyectoService proyectoService = new ProyectoService();
+    private final PagoService pagoService = new PagoService();
 
     // ---- 1. Empleados ----
     @FXML private CheckBox chkInactivosEmp;
@@ -82,16 +88,33 @@ public class AdministracionController implements Initializable {
     @FXML private Label lblMontoExp;
     @FXML private TextArea txtComentariosExp;
 
-    // ---- 3. Cuentas por cobrar ----
+    // ---- 3. Cuentas por cobrar (CRUD real de pago) ----
     @FXML private Label lblSaldoTotal;
     @FXML private Label lblFacturasPendientes;
     @FXML private Label lblPagosRecibidos;
     @FXML private Label lblPagosVencidos;
-    @FXML private TableView<String[]> tblCuentas;
+    @FXML private CheckBox chkInactivosPago;
+    @FXML private TextField txtBuscarPago;
+    @FXML private TableView<Pago> tblPagos;
+    @FXML private TableColumn<Pago, String> colPagFolio;
+    @FXML private TableColumn<Pago, String> colPagProyecto;
+    @FXML private TableColumn<Pago, String> colPagCliente;
+    @FXML private TableColumn<Pago, String> colPagConcepto;
+    @FXML private TableColumn<Pago, String> colPagFecha;
+    @FXML private TableColumn<Pago, String> colPagMonto;
+    @FXML private TableColumn<Pago, String> colPagEstado;
+    @FXML private TableColumn<Pago, String> colPagActivo;
+
+    @FXML private Label lblModoPago;
     @FXML private ComboBox<Proyecto> cmbProyectoPago;
     @FXML private Label lblSaldoFactura;
+    @FXML private TextField txtConceptoPago;
     @FXML private DatePicker dpFechaPago;
     @FXML private TextField txtMontoPago;
+    @FXML private ComboBox<String> cmbMetodoPagoAdm;
+    @FXML private ComboBox<String> cmbEstadoCuentaPago;
+
+    private Pago pagoSeleccionado;
 
     // ---- 4. Revisión final ----
     @FXML private TableView<Proyecto> tblRevisionFinal;
@@ -113,16 +136,18 @@ public class AdministracionController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         inicializarEmpleados();
         inicializarExpedientesYRevision();
+        inicializarPagos();
         cargarTablaEmpleados(null);
         cargarExpedientes(null);
+        cargarPagos(null);
     }
 
     // =========================================================================
     // 1. EMPLEADOS (CRUD COMPLETO)
     // =========================================================================
     private void inicializarEmpleados() {
-        cmbPuestoEmp.getItems().addAll("Administrador", "Agente de Ventas", "Técnico de Levantamiento",
-                "Técnico Instalador", "Compras y Almacén");
+        cmbPuestoEmp.getItems().addAll("Administrador general", "Administrador", "Agente de Ventas",
+                "Técnico de Levantamiento", "Técnico Instalador", "Compras y Almacén");
 
         colEmpId.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getIdEmpleado())));
         colEmpNombre.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombre()));
@@ -328,11 +353,9 @@ public class AdministracionController implements Initializable {
     }
 
     // =========================================================================
-    // 2, 3 y 4. EXPEDIENTES, COBRANZA Y REVISIÓN FINAL (CONECTADOS A PROYECTOS)
+    // 2 y 4. EXPEDIENTES Y REVISIÓN FINAL
     // =========================================================================
     private void inicializarExpedientesYRevision() {
-        dpFechaPago.setValue(LocalDate.now());
-
         colExpId.setCellValueFactory(d -> new SimpleStringProperty("PRY-" + String.format("%04d", d.getValue().getIdProyecto())));
         colExpCliente.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getClienteDescriptivo()));
         colExpNombre.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombreProyecto()));
@@ -350,9 +373,6 @@ public class AdministracionController implements Initializable {
                 lblMontoExp.setText(MONEDA.format(p.getCostoTotal()) + " + IVA");
             }
         });
-
-        cmbProyectoPago.valueProperty().addListener((o, a, p) ->
-                lblSaldoFactura.setText(p == null ? "$0.00" : MONEDA.format(p.getCostoTotal())));
 
         colRevId.setCellValueFactory(d -> new SimpleStringProperty("PRY-" + String.format("%04d", d.getValue().getIdProyecto())));
         colRevProyecto.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombreProyecto()));
@@ -376,35 +396,219 @@ public class AdministracionController implements Initializable {
             tblExpedientes.setItems(FXCollections.observableArrayList(proyectos));
             tblRevisionFinal.setItems(FXCollections.observableArrayList(proyectos));
             cmbProyectoPago.setItems(FXCollections.observableArrayList(proyectos));
-
-            BigDecimal total = proyectos.stream()
-                    .map(p -> p.getCostoTotal() != null ? p.getCostoTotal() : BigDecimal.ZERO)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            long finalizados = proyectos.stream()
-                    .filter(p -> "Finalizado".equalsIgnoreCase(p.getEstado())).count();
-            long revision = proyectos.stream()
-                    .filter(p -> p.getEstado() != null && p.getEstado().toLowerCase().contains("revisi")).count();
-
-            lblSaldoTotal.setText(MONEDA.format(total));
-            lblFacturasPendientes.setText(String.valueOf(proyectos.size()));
-            lblPagosRecibidos.setText(String.valueOf(finalizados));
-            lblPagosVencidos.setText(String.valueOf(revision));
-
-            String[][] filasCuentas = new String[proyectos.size()][5];
-            for (int i = 0; i < proyectos.size(); i++) {
-                Proyecto p = proyectos.get(i);
-                filasCuentas[i] = new String[]{
-                    "PRY-" + String.format("%04d", p.getIdProyecto()),
-                    p.getClienteNombre() != null ? p.getClienteNombre() : "Sin cliente",
-                    p.getNombreProyecto(),
-                    MONEDA.format(p.getCostoTotal()),
-                    p.getEstado() != null ? p.getEstado() : "Planeado"
-                };
-            }
-            Tablas.cargar(tblCuentas, filasCuentas);
+            actualizarKpisCobranza(proyectos);
         } catch (Exception ex) {
             AppLogger.registrarExcepcion(MOD_ADM, "AdministracionController", "CARGAR_EXPEDIENTES", ex);
         }
+    }
+
+    private void actualizarKpisCobranza(List<Proyecto> proyectos) {
+        try {
+            BigDecimal cartera = proyectos.stream()
+                    .map(p -> p.getCostoTotal() != null ? p.getCostoTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            List<Pago> pagosActivos = pagoService.listar(false);
+            BigDecimal cobrado = pagosActivos.stream()
+                    .map(Pago::getMonto)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal pendiente = cartera.subtract(cobrado).max(BigDecimal.ZERO);
+
+            lblSaldoTotal.setText(MONEDA.format(cartera));
+            lblPagosRecibidos.setText(MONEDA.format(cobrado));
+            lblPagosVencidos.setText(MONEDA.format(pendiente));
+            lblFacturasPendientes.setText(String.valueOf(pagosActivos.size()));
+        } catch (Exception ex) {
+            AppLogger.registrarExcepcion(MOD_PAG, "AdministracionController", "ACTUALIZAR_KPIS_COBRANZA", ex);
+        }
+    }
+
+    // =========================================================================
+    // 3. CUENTAS POR COBRAR (CRUD REAL SOBRE TABLA pago)
+    // =========================================================================
+    private void inicializarPagos() {
+        dpFechaPago.setValue(LocalDate.now());
+        cmbMetodoPagoAdm.setValue("Transferencia");
+        cmbEstadoCuentaPago.setValue("Pagado");
+
+        colPagFolio.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFolio()));
+        colPagProyecto.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProyectoDescriptivo()));
+        colPagCliente.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombreCliente()));
+        colPagConcepto.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getConcepto()));
+        colPagFecha.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getFechaPago() != null ? d.getValue().getFechaPago().toString() : ""));
+        colPagMonto.setCellValueFactory(d -> new SimpleStringProperty(MONEDA.format(d.getValue().getMonto())));
+        colPagEstado.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEstadoCuenta()));
+        colPagEstado.setCellFactory(c -> Tablas.crearCeldaEstado());
+        colPagActivo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getActivoTexto()));
+        colPagActivo.setCellFactory(c -> Tablas.crearCeldaEstado());
+        tblPagos.setPlaceholder(new Label("No hay pagos registrados en la base de datos"));
+
+        cmbProyectoPago.valueProperty().addListener((o, a, p) -> actualizarSaldoProyecto(p));
+
+        tblPagos.getSelectionModel().selectedItemProperty().addListener((obs, a, nuevo) -> {
+            if (nuevo != null) {
+                cargarPagoEnFormulario(nuevo);
+            }
+        });
+    }
+
+    private void actualizarSaldoProyecto(Proyecto p) {
+        if (p == null) {
+            lblSaldoFactura.setText("$0.00");
+            return;
+        }
+        try {
+            BigDecimal pagado = pagoService.sumarPagosActivosPorProyecto(p.getIdProyecto());
+            BigDecimal saldo = p.getCostoTotal().subtract(pagado).max(BigDecimal.ZERO);
+            lblSaldoFactura.setText(MONEDA.format(saldo));
+        } catch (Exception ex) {
+            AppLogger.registrarExcepcion(MOD_PAG, "AdministracionController", "CALCULAR_SALDO", ex);
+            lblSaldoFactura.setText(MONEDA.format(p.getCostoTotal()));
+        }
+    }
+
+    @FXML
+    private void cargarPagos(ActionEvent event) {
+        try {
+            tblPagos.setItems(FXCollections.observableArrayList(
+                    pagoService.listar(chkInactivosPago.isSelected())));
+            actualizarKpisCobranza(proyectoService.listar(false));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "LISTAR_PAGOS", ex);
+        }
+    }
+
+    @FXML
+    private void buscarPagos(ActionEvent event) {
+        try {
+            tblPagos.setItems(FXCollections.observableArrayList(
+                    pagoService.buscar(txtBuscarPago.getText(), chkInactivosPago.isSelected())));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "BUSCAR_PAGOS", ex);
+        }
+    }
+
+    @FXML
+    private void registrarPago(ActionEvent event) {
+        try {
+            Pago nuevo = construirPagoDesdeFormulario(new Pago(), "CREAR_PAGO");
+            Pago creado = pagoService.crear(nuevo);
+            AlertaUtil.info("Pago registrado",
+                    "Se registró el pago " + creado.getFolio() + " por " + MONEDA.format(creado.getMonto())
+                    + " para '" + creado.getProyectoDescriptivo() + "'.");
+            limpiarPago(null);
+            cargarPagos(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "CREAR_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void actualizarPago(ActionEvent event) {
+        if (pagoSeleccionado == null) {
+            AlertaUtil.advertencia("Selecciona un pago", "Elige un pago de la tabla para actualizarlo.");
+            return;
+        }
+        try {
+            Pago editado = construirPagoDesdeFormulario(pagoSeleccionado, "ACTUALIZAR_PAGO");
+            pagoService.actualizar(editado);
+            AlertaUtil.info("Pago actualizado", "Se actualizó " + editado.getFolio() + " en MySQL.");
+            limpiarPago(null);
+            cargarPagos(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "ACTUALIZAR_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void desactivarPago(ActionEvent event) {
+        if (pagoSeleccionado == null) {
+            AlertaUtil.advertencia("Selecciona un pago", "Elige un pago de la tabla.");
+            return;
+        }
+        try {
+            pagoService.desactivar(pagoSeleccionado.getIdPago());
+            AlertaUtil.info("Pago desactivado", "El pago pasó a estado inactivo.");
+            limpiarPago(null);
+            cargarPagos(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "DESACTIVAR_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void reactivarPago(ActionEvent event) {
+        if (pagoSeleccionado == null) {
+            AlertaUtil.advertencia("Selecciona un pago", "Marca 'Mostrar inactivos' y elige un pago.");
+            return;
+        }
+        try {
+            pagoService.reactivar(pagoSeleccionado.getIdPago());
+            AlertaUtil.info("Pago reactivado", "El pago volvió a estar activo.");
+            limpiarPago(null);
+            cargarPagos(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "REACTIVAR_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void eliminarFisicoPago(ActionEvent event) {
+        if (pagoSeleccionado == null) {
+            AlertaUtil.advertencia("Selecciona un pago", "Elige un pago de la tabla.");
+            return;
+        }
+        if (!AlertaUtil.confirmar("Eliminar pago definitivamente",
+                "¿Eliminar permanentemente " + pagoSeleccionado.getFolio() + " de la base de datos?")) {
+            return;
+        }
+        try {
+            pagoService.eliminarFisico(pagoSeleccionado.getIdPago());
+            AlertaUtil.info("Pago eliminado", "El pago fue eliminado de la base de datos.");
+            limpiarPago(null);
+            cargarPagos(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAG, "ELIMINAR_FISICO_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void limpiarPago(ActionEvent event) {
+        pagoSeleccionado = null;
+        lblModoPago.setText("Registrar pago");
+        cmbProyectoPago.setValue(null);
+        lblSaldoFactura.setText("$0.00");
+        txtConceptoPago.clear();
+        dpFechaPago.setValue(LocalDate.now());
+        txtMontoPago.clear();
+        cmbMetodoPagoAdm.setValue("Transferencia");
+        cmbEstadoCuentaPago.setValue("Pagado");
+        tblPagos.getSelectionModel().clearSelection();
+    }
+
+    private void cargarPagoEnFormulario(Pago p) {
+        pagoSeleccionado = p;
+        lblModoPago.setText("Editando " + p.getFolio());
+        ComboBuscadorUtil.seleccionarPorPredicado(cmbProyectoPago, pr -> pr.getIdProyecto() == p.getIdProyecto());
+        txtConceptoPago.setText(p.getConcepto() == null ? "" : p.getConcepto());
+        dpFechaPago.setValue(p.getFechaPago());
+        txtMontoPago.setText(p.getMonto().toPlainString());
+        cmbMetodoPagoAdm.setValue(p.getMetodoPago());
+        cmbEstadoCuentaPago.setValue(p.getEstadoCuenta());
+    }
+
+    private Pago construirPagoDesdeFormulario(Pago base, String op) throws ValidacionException {
+        Proyecto p = cmbProyectoPago.getValue();
+        if (p == null) {
+            throw new ValidacionException(MOD_PAG, op, "Selecciona un proyecto de la lista desplegable.");
+        }
+        base.setIdProyecto(p.getIdProyecto());
+        base.setConcepto(txtConceptoPago.getText());
+        base.setFechaPago(dpFechaPago.getValue() != null ? dpFechaPago.getValue() : LocalDate.now());
+        base.setMonto(Validador.parsearDecimalPositivo(txtMontoPago.getText(), "Monto", MOD_PAG, op));
+        base.setMetodoPago(cmbMetodoPagoAdm.getValue());
+        base.setEstadoCuenta(cmbEstadoCuentaPago.getValue() != null ? cmbEstadoCuentaPago.getValue() : "Pagado");
+        return base;
     }
 
     @FXML
@@ -443,19 +647,6 @@ public class AdministracionController implements Initializable {
         } catch (Exception ex) {
             AlertaUtil.errorControlado(MOD_ADM, "RECHAZAR_PROYECTO", ex);
         }
-    }
-
-    @FXML
-    private void registrarPago(ActionEvent event) {
-        Proyecto p = cmbProyectoPago.getValue();
-        if (p == null || txtMontoPago.getText().trim().isEmpty()) {
-            Mensajes.error("Faltan datos", "Selecciona el proyecto e indica el monto del pago.");
-            return;
-        }
-        AppLogger.registrarInfo(MOD_ADM, "AdministracionController", "REGISTRAR_PAGO",
-                "Pago registrado para proyecto #" + p.getIdProyecto() + " por $" + txtMontoPago.getText().trim());
-        Mensajes.info("Pago registrado", "Se registró el abono para '" + p.getNombreProyecto() + "'.");
-        txtMontoPago.clear();
     }
 
     @FXML

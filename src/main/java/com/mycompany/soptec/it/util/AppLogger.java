@@ -21,11 +21,20 @@ import java.util.regex.Pattern;
 public final class AppLogger {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final Path RUTA_LOG = Paths.get("logs", "soptec_errores.log");
+    private static final Path RUTA_LOG_DEFAULT = Paths.get("logs", "soptec_errores.log");
+    private static volatile Path rutaLog = RUTA_LOG_DEFAULT;
     private static final Pattern PATRON_SENSIBLE = Pattern.compile(
             "(?i)(password|contrasena|contraseña|pwd|clave|secret|token)\\s*[:=]\\s*[^\\s,;)]*");
 
     private AppLogger() {
+    }
+
+    public static synchronized void configurarRutaLog(Path nuevaRuta) {
+        rutaLog = (nuevaRuta == null) ? RUTA_LOG_DEFAULT : nuevaRuta;
+    }
+
+    public static synchronized void restaurarRutaPorDefecto() {
+        rutaLog = RUTA_LOG_DEFAULT;
     }
 
     public static synchronized void registrarExcepcion(String modulo, String proceso, String operacion, Throwable ex) {
@@ -51,10 +60,10 @@ public final class AppLogger {
 
     public static synchronized List<String> leerLineas() {
         try {
-            if (!Files.exists(RUTA_LOG)) {
+            if (!Files.exists(rutaLog)) {
                 return Collections.emptyList();
             }
-            return Files.readAllLines(RUTA_LOG, StandardCharsets.UTF_8);
+            return Files.readAllLines(rutaLog, StandardCharsets.UTF_8);
         } catch (IOException ex) {
             return Collections.singletonList("No se pudo leer el archivo de log: " + ex.getMessage());
         }
@@ -67,11 +76,11 @@ public final class AppLogger {
 
     public static synchronized void limpiarLog() throws IOException {
         asegurarDirectorio();
-        Files.write(RUTA_LOG, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        Files.write(rutaLog, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public static Path getRutaLog() {
-        return RUTA_LOG.toAbsolutePath();
+        return rutaLog.toAbsolutePath();
     }
 
     private static void escribir(String nivel, String modulo, String proceso, String operacion,
@@ -89,7 +98,7 @@ public final class AppLogger {
                     limpiarCampo(operacion),
                     limpiarCampo(tipoExcepcion),
                     detalleSeguro);
-            Files.write(RUTA_LOG, linea.getBytes(StandardCharsets.UTF_8),
+            Files.write(rutaLog, linea.getBytes(StandardCharsets.UTF_8),
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (IOException ioEx) {
             System.err.println("Error critico al escribir log: " + ioEx.getMessage());
@@ -97,7 +106,7 @@ public final class AppLogger {
     }
 
     private static void asegurarDirectorio() throws IOException {
-        Path parent = RUTA_LOG.getParent();
+        Path parent = rutaLog.getParent();
         if (parent != null && !Files.exists(parent)) {
             Files.createDirectories(parent);
         }

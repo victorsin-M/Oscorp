@@ -90,6 +90,16 @@ public final class Validador {
         }
     }
 
+    public static BigDecimal parsearDecimalPositivo(String texto, String nombreCampo, String modulo, String operacion)
+            throws ValidacionException {
+        BigDecimal valor = parsearDecimalNoNegativo(texto, nombreCampo, modulo, operacion);
+        if (valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidacionException(modulo, operacion,
+                    "El campo '" + nombreCampo + "' debe ser mayor a cero.");
+        }
+        return valor;
+    }
+
     public static int parsearEnteroNoNegativo(String texto, String nombreCampo, String modulo, String operacion)
             throws ValidacionException {
         String limpio = requerido(texto, nombreCampo, modulo, operacion);

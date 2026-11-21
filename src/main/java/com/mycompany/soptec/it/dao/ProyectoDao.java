@@ -2,8 +2,11 @@ package com.mycompany.soptec.it.dao;
 
 import com.mycompany.soptec.it.excepciones.OperacionBDException;
 import com.mycompany.soptec.it.excepciones.SoptecException;
+import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Levantamiento;
+import com.mycompany.soptec.it.modelo.Pago;
 import com.mycompany.soptec.it.modelo.Proyecto;
+import com.mycompany.soptec.it.modelo.ProyectoMaterial;
 import com.mycompany.soptec.it.util.AppLogger;
 import java.sql.Connection;
 import java.sql.Date;
@@ -94,6 +97,91 @@ public class ProyectoDao {
                     "No se pudo completar el registro del proyecto y su levantamiento. Se revirtieron los cambios.", ex);
         } catch (SoptecException ex) {
             Conexion.revertirSilencioso(con, MODULO, "CREAR_PROYECTO_CON_LEVANTAMIENTO");
+            throw ex;
+        } finally {
+            Conexion.cerrarSilencioso(con);
+        }
+    }
+
+    /**
+     * Transaccion integral (Venta/Proyecto): registra el proyecto junto con sus materiales (proyecto_material),
+     * personal asignado (proyecto_empleado) y pago/anticipo inicial (pago) en una sola transaccion atomica.
+     * Si falla cualquiera de los pasos, se revierte toda la operacion con rollback.
+     */
+    public Proyecto crearProyectoIntegral(Proyecto proyecto, List<ProyectoMaterial> materiales,
+            List<Integer> idsEmpleados, Pago pagoInicial, boolean simularFallo) throws SoptecException {
+        Connection con = null;
+        try {
+            con = Conexion.conectarStrict(MODULO, "CREAR_PROYECTO_INTEGRAL");
+            con.setAutoCommit(false);
+
+            int idProyecto = crear(con, proyecto);
+
+            ProyectoMaterialDao pmDao = new ProyectoMaterialDao();
+            if (materiales != null) {
+                for (ProyectoMaterial pm : materiales) {
+                    int descontar = pm.getCantidad().intValue();
+                    if (descontar > 0) {
+                        try (PreparedStatement psCheck = con.prepareStatement(
+                                "SELECT existencias, descripcion_material FROM material WHERE id_material = ? FOR UPDATE")) {
+                            psCheck.setInt(1, pm.getIdMaterial());
+                            try (ResultSet rs = psCheck.executeQuery()) {
+                                if (!rs.next()) {
+                                    throw new ValidacionException(MODULO, "CREAR_PROYECTO_INTEGRAL",
+                                            "Uno de los materiales seleccionados ya no existe en el catálogo.");
+                                }
+                                int disp = rs.getInt("existencias");
+                                if (disp < descontar) {
+                                    throw new ValidacionException(MODULO, "CREAR_PROYECTO_INTEGRAL",
+                                            "Existencias insuficientes para '" + rs.getString("descripcion_material")
+                                                    + "' (disponible: " + disp + ", solicitado: " + descontar + ").");
+                                }
+                            }
+                        }
+                        try (PreparedStatement psUpd = con.prepareStatement(
+                                "UPDATE material SET existencias = existencias - ? WHERE id_material = ?")) {
+                            psUpd.setInt(1, descontar);
+                            psUpd.setInt(2, pm.getIdMaterial());
+                            psUpd.executeUpdate();
+                        }
+                    }
+                    pmDao.asignar(con, idProyecto, pm.getIdMaterial(), pm.getCantidad());
+                }
+            }
+
+            ProyectoEmpleadoDao peDao = new ProyectoEmpleadoDao();
+            if (idsEmpleados != null) {
+                for (Integer idEmp : idsEmpleados) {
+                    if (idEmp != null && idEmp > 0) {
+                        peDao.asignar(con, idProyecto, idEmp);
+                    }
+                }
+            }
+
+            if (simularFallo) {
+                throw new SQLException("Fallo simulado al registrar pago y servicios del proyecto para comprobar rollback.",
+                        "45000", 9996);
+            }
+
+            if (pagoInicial != null) {
+                pagoInicial.setIdProyecto(idProyecto);
+                new PagoDao().crear(con, pagoInicial);
+            }
+
+            con.commit();
+            AppLogger.registrarInfo(MODULO, "ProyectoDao", "CREAR_PROYECTO_INTEGRAL",
+                    "Proyecto integral confirmado ID=" + idProyecto
+                    + " (materiales=" + (materiales != null ? materiales.size() : 0)
+                    + ", empleados=" + (idsEmpleados != null ? idsEmpleados.size() : 0)
+                    + ", pagoInicial=" + (pagoInicial != null) + ")");
+            return obtenerPorId(idProyecto);
+        } catch (SQLException ex) {
+            Conexion.revertirSilencioso(con, MODULO, "CREAR_PROYECTO_INTEGRAL");
+            throw DaoSupport.traducirYRegistrar(MODULO, "ProyectoDao", "CREAR_PROYECTO_INTEGRAL",
+                    "No se pudo completar el registro del proyecto junto con sus materiales, técnicos y pago. Se revirtieron todos los cambios.",
+                    ex);
+        } catch (SoptecException ex) {
+            Conexion.revertirSilencioso(con, MODULO, "CREAR_PROYECTO_INTEGRAL");
             throw ex;
         } finally {
             Conexion.cerrarSilencioso(con);

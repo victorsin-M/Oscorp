@@ -3,8 +3,11 @@ package soptecit.controladores;
 import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Cita;
 import com.mycompany.soptec.it.modelo.Cliente;
+import com.mycompany.soptec.it.modelo.Levantamiento;
+import com.mycompany.soptec.it.modelo.Proyecto;
 import com.mycompany.soptec.it.servicio.CitaService;
 import com.mycompany.soptec.it.servicio.ClienteService;
+import com.mycompany.soptec.it.servicio.ProyectoService;
 import com.mycompany.soptec.it.util.AlertaUtil;
 import com.mycompany.soptec.it.util.ComboBuscadorUtil;
 import com.mycompany.soptec.it.util.Validador;
@@ -26,16 +29,19 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import soptecit.util.Tablas;
 
 /**
  * Controlador estilizado de Agenda y CRUD de Citas conectado a CitaService y ClienteService.
+ * Permite registrar citas conjuntamente con su levantamiento tecnico de forma transaccional.
  */
 public class CitasController implements Initializable {
 
     private static final String MODULO = "Citas";
     private final CitaService service = new CitaService();
     private final ClienteService clienteService = new ClienteService();
+    private final ProyectoService proyectoService = new ProyectoService();
 
     @FXML private CheckBox chkInactivos;
     @FXML private TextField txtBuscarCita;
@@ -61,6 +67,9 @@ public class CitasController implements Initializable {
     @FXML private ComboBox<String> cmbHora;
     @FXML private ComboBox<String> cmbEstadoCita;
     @FXML private TextArea txtObservaciones;
+    @FXML private CheckBox chkIncluirLevantamiento;
+    @FXML private VBox panelLevConjunto;
+    @FXML private ComboBox<Proyecto> cmbProyectoCita;
 
     private Cita seleccionado;
 
@@ -108,6 +117,9 @@ public class CitasController implements Initializable {
             }
         });
 
+        panelLevConjunto.visibleProperty().bind(chkIncluirLevantamiento.selectedProperty());
+        panelLevConjunto.managedProperty().bind(chkIncluirLevantamiento.selectedProperty());
+
         cargarComboClientes();
         cargarTabla(null);
     }
@@ -116,6 +128,8 @@ public class CitasController implements Initializable {
         try {
             List<Cliente> activos = clienteService.listar(false);
             ComboBuscadorUtil.configurar(cmbCliente, txtFiltroCliente, activos, Cliente::toString);
+            List<Proyecto> proyectos = proyectoService.listar(false);
+            cmbProyectoCita.setItems(FXCollections.observableArrayList(proyectos));
         } catch (Exception ex) {
             AlertaUtil.errorControlado(MODULO, "CARGAR_COMBO_CLIENTES", ex);
         }
@@ -187,10 +201,26 @@ public class CitasController implements Initializable {
     @FXML
     private void guardarCita(ActionEvent event) {
         try {
-            Cita creada = service.crear(construirDesdeFormulario(new Cita(), "CREAR_CITA"));
-            AlertaUtil.info("Cita agendada",
-                    "Se registró la cita para " + creada.getClienteDescriptivo()
-                    + " el " + creada.getFechaCita() + " a las " + creada.getHoraCita() + ".");
+            Cita datos = construirDesdeFormulario(new Cita(), "CREAR_CITA");
+            Cita creada;
+            if (chkIncluirLevantamiento.isSelected()) {
+                Proyecto proy = cmbProyectoCita.getValue();
+                if (proy == null) {
+                    throw new ValidacionException(MODULO, "CREAR_CITA_CON_LEVANTAMIENTO",
+                            "Selecciona el proyecto al que se vinculará el levantamiento inicial.");
+                }
+                Levantamiento lev = new Levantamiento(0, datos.getFechaCita(), null,
+                        datos.getObservaciones(), proy.getIdProyecto(), null, true, null, null, null);
+                creada = service.crearConLevantamientoInicial(datos, lev, false);
+                AlertaUtil.info("Cita y levantamiento registrados",
+                        "Se registró la cita de " + creada.getClienteDescriptivo()
+                        + " junto con su levantamiento técnico del proyecto '" + proy.getNombreProyecto() + "'.");
+            } else {
+                creada = service.crear(datos);
+                AlertaUtil.info("Cita agendada",
+                        "Se registró la cita para " + creada.getClienteDescriptivo()
+                        + " el " + creada.getFechaCita() + " a las " + creada.getHoraCita() + ".");
+            }
             limpiar(null);
             cargarTabla(null);
         } catch (Exception ex) {
@@ -320,6 +350,8 @@ public class CitasController implements Initializable {
         cmbHora.getEditor().setText("09:00");
         cmbEstadoCita.setValue("Programada");
         txtObservaciones.clear();
+        chkIncluirLevantamiento.setSelected(false);
+        cmbProyectoCita.setValue(null);
         tblCitas.getSelectionModel().clearSelection();
     }
 

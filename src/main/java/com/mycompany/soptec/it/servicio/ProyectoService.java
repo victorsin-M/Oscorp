@@ -1,26 +1,35 @@
 package com.mycompany.soptec.it.servicio;
 
 import com.mycompany.soptec.it.dao.ClienteDao;
+import com.mycompany.soptec.it.dao.EmpleadoDao;
+import com.mycompany.soptec.it.dao.MaterialDao;
 import com.mycompany.soptec.it.dao.ProyectoDao;
 import com.mycompany.soptec.it.excepciones.IntegridadReferencialException;
 import com.mycompany.soptec.it.excepciones.SoptecException;
 import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Cliente;
+import com.mycompany.soptec.it.modelo.Empleado;
 import com.mycompany.soptec.it.modelo.Levantamiento;
+import com.mycompany.soptec.it.modelo.Material;
+import com.mycompany.soptec.it.modelo.Pago;
 import com.mycompany.soptec.it.modelo.Proyecto;
+import com.mycompany.soptec.it.modelo.ProyectoMaterial;
 import com.mycompany.soptec.it.util.AppLogger;
 import com.mycompany.soptec.it.util.Validador;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Reglas de negocio para proyectos y su relacion con clientes y levantamientos.
+ * Reglas de negocio para proyectos y su relacion con clientes, levantamientos, materiales, tecnicos y pagos.
  */
 public class ProyectoService {
 
     private static final String MODULO = "Proyectos";
     private final ProyectoDao dao = new ProyectoDao();
     private final ClienteDao clienteDao = new ClienteDao();
+    private final MaterialDao materialDao = new MaterialDao();
+    private final EmpleadoDao empleadoDao = new EmpleadoDao();
 
     public Proyecto crear(Proyecto p) throws SoptecException {
         try {
@@ -48,6 +57,65 @@ public class ProyectoService {
             return dao.crearConLevantamientoInicial(p, l, simularFallo);
         } catch (ValidacionException | IntegridadReferencialException ex) {
             AppLogger.registrarExcepcion(MODULO, "ProyectoService", "CREAR_PROYECTO_CON_LEVANTAMIENTO", ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Registra un proyecto (venta) junto con sus materiales M:N, empleados M:N y pago inicial
+     * dentro de una sola transaccion atomica con rollback garantizado.
+     */
+    public Proyecto crearProyectoIntegral(Proyecto p, List<ProyectoMaterial> materiales,
+            List<Integer> idsEmpleados, Pago pagoInicial, boolean simularFallo) throws SoptecException {
+        String op = "CREAR_PROYECTO_INTEGRAL";
+        try {
+            validar(p, op);
+            p.setActivo(true);
+            if (materiales != null) {
+                for (ProyectoMaterial pm : materiales) {
+                    if (pm == null || pm.getIdMaterial() <= 0) {
+                        throw new ValidacionException(MODULO, op, "Todos los materiales asignados deben ser válidos.");
+                    }
+                    if (pm.getCantidad() == null || pm.getCantidad().compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new ValidacionException(MODULO, op, "La cantidad de cada material debe ser mayor a cero.");
+                    }
+                    Material m = materialDao.obtenerPorId(pm.getIdMaterial());
+                    if (m == null || !m.isActivo()) {
+                        throw new ValidacionException(MODULO, op,
+                                "Uno de los materiales seleccionados no existe o está inactivo.");
+                    }
+                }
+            }
+            if (idsEmpleados != null) {
+                for (Integer idEmp : idsEmpleados) {
+                    if (idEmp == null || idEmp <= 0) {
+                        continue;
+                    }
+                    Empleado e = empleadoDao.obtenerPorId(idEmp);
+                    if (e == null || !e.isActivo()) {
+                        throw new ValidacionException(MODULO, op,
+                                "Uno de los empleados asignados no existe o está inactivo.");
+                    }
+                }
+            }
+            if (pagoInicial != null) {
+                if (pagoInicial.getMonto() == null || pagoInicial.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new ValidacionException(MODULO, op, "El monto del anticipo/pago inicial debe ser mayor a cero.");
+                }
+                if (pagoInicial.getFechaPago() == null) {
+                    pagoInicial.setFechaPago(LocalDate.now());
+                }
+                if (pagoInicial.getConcepto() == null || pagoInicial.getConcepto().isBlank()) {
+                    pagoInicial.setConcepto("Anticipo inicial - " + p.getNombreProyecto());
+                }
+                if (pagoInicial.getEstadoCuenta() == null || pagoInicial.getEstadoCuenta().isBlank()) {
+                    pagoInicial.setEstadoCuenta("Parcial");
+                }
+                pagoInicial.setActivo(true);
+            }
+            return dao.crearProyectoIntegral(p, materiales, idsEmpleados, pagoInicial, simularFallo);
+        } catch (ValidacionException | IntegridadReferencialException ex) {
+            AppLogger.registrarExcepcion(MODULO, "ProyectoService", op, ex);
             throw ex;
         }
     }

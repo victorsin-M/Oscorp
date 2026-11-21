@@ -3,25 +3,35 @@ package soptecit.controladores;
 import com.mycompany.soptec.it.excepciones.ValidacionException;
 import com.mycompany.soptec.it.modelo.Cliente;
 import com.mycompany.soptec.it.modelo.ClienteTelefono;
+import com.mycompany.soptec.it.modelo.Empleado;
+import com.mycompany.soptec.it.modelo.Material;
+import com.mycompany.soptec.it.modelo.Pago;
 import com.mycompany.soptec.it.modelo.Proyecto;
+import com.mycompany.soptec.it.modelo.ProyectoMaterial;
 import com.mycompany.soptec.it.servicio.ClienteService;
 import com.mycompany.soptec.it.servicio.ClienteTelefonoService;
+import com.mycompany.soptec.it.servicio.EmpleadoService;
+import com.mycompany.soptec.it.servicio.MaterialService;
+import com.mycompany.soptec.it.servicio.PagoService;
 import com.mycompany.soptec.it.servicio.ProyectoService;
 import com.mycompany.soptec.it.util.AlertaUtil;
+import com.mycompany.soptec.it.util.AppLogger;
 import com.mycompany.soptec.it.util.ComboBuscadorUtil;
 import com.mycompany.soptec.it.util.GestorImagenes;
 import com.mycompany.soptec.it.util.Validador;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -39,19 +49,24 @@ import soptecit.util.Tablas;
 
 /**
  * Controlador estilizado del área de Ventas.
- * Integra CRUD real de Clientes, Teléfonos de Cliente, Proyectos y Facturación.
+ * Integra CRUD real de Clientes, Teléfonos de Cliente, Proyectos (con alta transaccional integral)
+ * y Facturación/Pagos sobre la tabla pago en MySQL.
  */
 public class VentasController implements Initializable {
 
     private static final String MOD_CLIENTES = "Clientes";
     private static final String MOD_TELEFONOS = "TelefonosCliente";
     private static final String MOD_PROYECTOS = "Proyectos";
+    private static final String MOD_PAGOS = "Pagos";
     private static final NumberFormat MONEDA = NumberFormat.getCurrencyInstance(new Locale("es", "MX"));
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final ClienteService clienteService = new ClienteService();
     private final ClienteTelefonoService telefonoService = new ClienteTelefonoService();
     private final ProyectoService proyectoService = new ProyectoService();
+    private final PagoService pagoService = new PagoService();
+    private final MaterialService materialService = new MaterialService();
+    private final EmpleadoService empleadoService = new EmpleadoService();
 
     // ==================== 1. CLIENTES ====================
     @FXML private CheckBox chkInactivosCliente;
@@ -115,19 +130,31 @@ public class VentasController implements Initializable {
     @FXML private DatePicker dpFinProy;
     @FXML private ComboBox<String> cmbEstadoProy;
     @FXML private TextField txtCostoProy;
+    @FXML private ComboBox<Material> cmbMaterialProy;
+    @FXML private TextField txtCantMatProy;
+    @FXML private ComboBox<Empleado> cmbTecnicoProy;
+    @FXML private TextField txtAnticipoProy;
 
     private Proyecto proyectoSeleccionado;
 
-    // ==================== 4. FACTURACIÓN ====================
-    @FXML private TableView<String[]> tblFacturas;
+    // ==================== 4. FACTURACIÓN Y PAGOS (BD REAL) ====================
+    @FXML private CheckBox chkInactivosFactura;
+    @FXML private TableView<Pago> tblFacturas;
+    @FXML private TableColumn<Pago, String> colFacFolio;
+    @FXML private TableColumn<Pago, String> colFacProyecto;
+    @FXML private TableColumn<Pago, String> colFacCliente;
+    @FXML private TableColumn<Pago, String> colFacFecha;
+    @FXML private TableColumn<Pago, String> colFacTotal;
+    @FXML private TableColumn<Pago, String> colFacEstado;
     @FXML private TextField txtBuscarFactura;
     @FXML private ComboBox<String> cmbFiltroFactura;
     @FXML private Label lblResumenFacturas;
+    @FXML private Label lblModoFactura;
     @FXML private ComboBox<Proyecto> cmbProyectoFactura;
     @FXML private TextField txtClienteFactura;
     @FXML private TextField txtRfcFactura;
     @FXML private DatePicker dpEmision;
-    @FXML private DatePicker dpVencimiento;
+    @FXML private ComboBox<String> cmbEstadoFactura;
     @FXML private TextField txtConcepto;
     @FXML private TextField txtImporte;
     @FXML private ComboBox<String> cmbMetodoPago;
@@ -135,9 +162,7 @@ public class VentasController implements Initializable {
     @FXML private Label lblIva;
     @FXML private Label lblTotal;
 
-    private ObservableList<String[]> facturas;
-    private FilteredList<String[]> facturasFiltradas;
-    private int siguienteFolio = 106;
+    private Pago facturaSeleccionada;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -151,9 +176,11 @@ public class VentasController implements Initializable {
     private void refrescarTodo() {
         cargarTablaClientes(null);
         cargarCombosClientes();
+        cargarCombosProyectoIntegral();
         cargarTablaTelefonos(null);
         cargarTablaProyectos(null);
         cargarComboProyectosFactura();
+        cargarTablaFacturas(null);
     }
 
     // =========================================================================
@@ -648,15 +675,59 @@ public class VentasController implements Initializable {
         }
     }
 
+    private void cargarCombosProyectoIntegral() {
+        try {
+            cmbMaterialProy.setItems(FXCollections.observableArrayList(materialService.listar(false)));
+            cmbTecnicoProy.setItems(FXCollections.observableArrayList(empleadoService.listar(false)));
+        } catch (Exception ex) {
+            AppLogger.registrarExcepcion(MOD_PROYECTOS, "VentasController", "CARGAR_COMBOS_INTEGRALES", ex);
+        }
+    }
+
     @FXML
     private void guardarProyecto(ActionEvent event) {
         try {
-            Proyecto creado = proyectoService.crear(construirProyectoDesdeFormulario(new Proyecto(), "CREAR_PROYECTO"));
-            AlertaUtil.info("Proyecto registrado",
-                    "Se guardó '" + creado.getNombreProyecto() + "' para " + creado.getClienteDescriptivo() + ".");
+            Proyecto datos = construirProyectoDesdeFormulario(new Proyecto(), "CREAR_PROYECTO");
+            Material matIni = cmbMaterialProy.getValue();
+            Empleado tecIni = cmbTecnicoProy.getValue();
+            String anticipoTxt = txtAnticipoProy.getText();
+            boolean esIntegral = matIni != null || tecIni != null || (anticipoTxt != null && !anticipoTxt.isBlank());
+
+            Proyecto creado;
+            if (esIntegral) {
+                List<ProyectoMaterial> listaMat = new ArrayList<>();
+                if (matIni != null) {
+                    String cantTxt = (txtCantMatProy.getText() == null || txtCantMatProy.getText().isBlank())
+                            ? "1" : txtCantMatProy.getText();
+                    BigDecimal cant = Validador.parsearDecimalPositivo(
+                            cantTxt, "Cantidad de material inicial", MOD_PROYECTOS, "CREAR_PROYECTO_INTEGRAL");
+                    listaMat.add(new ProyectoMaterial(0, matIni.getIdMaterial(), cant));
+                }
+                List<Integer> listaEmp = new ArrayList<>();
+                if (tecIni != null) {
+                    listaEmp.add(tecIni.getIdEmpleado());
+                }
+                Pago pagoInicial = null;
+                if (anticipoTxt != null && !anticipoTxt.isBlank()) {
+                    BigDecimal montoAnticipo = Validador.parsearDecimalPositivo(
+                            anticipoTxt, "Anticipo inicial", MOD_PROYECTOS, "CREAR_PROYECTO_INTEGRAL");
+                    pagoInicial = new Pago(0, 0, "Anticipo inicial - " + datos.getNombreProyecto(),
+                            montoAnticipo, LocalDate.now(), "Parcial", "Transferencia", true, null, null, null);
+                }
+                creado = proyectoService.crearProyectoIntegral(datos, listaMat, listaEmp, pagoInicial, false);
+                AlertaUtil.info("Proyecto integral registrado",
+                        "Se registró '" + creado.getNombreProyecto()
+                        + "' junto con sus datos relacionados de forma transaccional.");
+            } else {
+                creado = proyectoService.crear(datos);
+                AlertaUtil.info("Proyecto registrado",
+                        "Se guardó '" + creado.getNombreProyecto() + "' para " + creado.getClienteDescriptivo() + ".");
+            }
             limpiarProyecto(null);
             cargarTablaProyectos(null);
             cargarComboProyectosFactura();
+            cargarCombosProyectoIntegral();
+            cargarTablaFacturas(null);
         } catch (Exception ex) {
             AlertaUtil.errorControlado(MOD_PROYECTOS, "CREAR_PROYECTO", ex);
         }
@@ -746,6 +817,10 @@ public class VentasController implements Initializable {
         dpFinProy.setValue(null);
         cmbEstadoProy.setValue("Planeado");
         txtCostoProy.clear();
+        cmbMaterialProy.setValue(null);
+        txtCantMatProy.clear();
+        cmbTecnicoProy.setValue(null);
+        txtAnticipoProy.clear();
         tblProyectos.getSelectionModel().clearSelection();
     }
 
@@ -776,19 +851,33 @@ public class VentasController implements Initializable {
     }
 
     // =========================================================================
-    // 4. FACTURACIÓN
+    // 4. FACTURACIÓN Y PAGOS (PERSISTENCIA REAL SOBRE TABLA pago EN MYSQL)
     // =========================================================================
     private void inicializarFacturacion() {
         dpEmision.setValue(LocalDate.now());
-        dpVencimiento.setValue(LocalDate.now().plusDays(30));
+        cmbFiltroFactura.setValue("Todas");
+        cmbEstadoFactura.setValue("Pendiente");
+        cmbMetodoPago.setValue("Transferencia");
+
+        colFacFolio.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFolio()));
+        colFacProyecto.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getProyectoDescriptivo()));
+        colFacCliente.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNombreCliente()));
+        colFacFecha.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getFechaPago() != null ? d.getValue().getFechaPago().format(FECHA) : ""));
+        colFacTotal.setCellValueFactory(d -> new SimpleStringProperty(MONEDA.format(d.getValue().getMonto())));
+        colFacEstado.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEstadoCuenta()));
+        colFacEstado.setCellFactory(c -> Tablas.crearCeldaEstado());
+        tblFacturas.setPlaceholder(new Label("No hay facturas / pagos registrados en MySQL"));
 
         cmbProyectoFactura.valueProperty().addListener((o, a, p) -> {
             if (p != null) {
                 txtClienteFactura.setText(p.getClienteNombre() != null ? p.getClienteNombre() : "");
                 txtRfcFactura.setText(p.getClienteRfc() != null ? p.getClienteRfc() : "");
-                txtConcepto.setText(p.getNombreProyecto());
-                if (p.getCostoTotal() != null) {
-                    txtImporte.setText(p.getCostoTotal().toPlainString());
+                if (facturaSeleccionada == null) {
+                    txtConcepto.setText(p.getNombreProyecto());
+                    if (p.getCostoTotal() != null) {
+                        txtImporte.setText(p.getCostoTotal().toPlainString());
+                    }
                 }
             } else {
                 txtClienteFactura.clear();
@@ -796,32 +885,23 @@ public class VentasController implements Initializable {
             }
         });
         txtImporte.textProperty().addListener((o, a, n) -> calcularTotales());
+        cmbFiltroFactura.valueProperty().addListener((o, a, n) -> buscarFacturas(null));
 
-        Tablas.cargar(tblFacturas, new String[][]{
-            {"F-0105", "PRY-0001", "Corporativo Avante", "15/10/2026", "$100,224.00", "Parcial",
-                "CAV150301AB2", "14/11/2026", "Instalación de red Cat6 - 24 nodos", "$86,400.00", "$13,824.00", "Transferencia"},
-            {"F-0104", "PRY-0002", "Oficinas LTJO", "08/10/2026", "$58,000.00", "Pagada",
-                "OLT120815KJ3", "07/11/2026", "Red de voz y datos - 16 nodos", "$50,000.00", "$8,000.00", "Transferencia"}
+        tblFacturas.getSelectionModel().selectedItemProperty().addListener((obs, a, nuevo) -> {
+            if (nuevo != null) {
+                cargarFacturaEnFormulario(nuevo);
+            }
         });
 
-        facturas = tblFacturas.getItems();
-        facturasFiltradas = new FilteredList<>(facturas, f -> true);
-        tblFacturas.setItems(facturasFiltradas);
-
-        txtBuscarFactura.textProperty().addListener((o, a, n) -> filtrarFacturas());
-        cmbFiltroFactura.valueProperty().addListener((o, a, n) -> filtrarFacturas());
-        facturasFiltradas.addListener((javafx.collections.ListChangeListener<String[]>) c -> actualizarResumenFacturas());
-
         tblFacturas.setRowFactory(t -> {
-            TableRow<String[]> fila = new TableRow<>();
+            TableRow<Pago> fila = new TableRow<>();
             fila.setOnMouseClicked(e -> {
                 if (e.getClickCount() == 2 && !fila.isEmpty()) {
-                    DetalleFacturaController.abrir(fila.getItem(), tblFacturas.getScene().getWindow());
+                    DetalleFacturaController.abrir(aArregloFactura(fila.getItem()), tblFacturas.getScene().getWindow());
                 }
             });
             return fila;
         });
-        actualizarResumenFacturas();
     }
 
     private void cargarComboProyectosFactura() {
@@ -829,28 +909,48 @@ public class VentasController implements Initializable {
             List<Proyecto> activos = proyectoService.listar(false);
             cmbProyectoFactura.setItems(FXCollections.observableArrayList(activos));
         } catch (Exception ex) {
-            // Ya reportado en proyectos
+            AppLogger.registrarExcepcion(MOD_PAGOS, "VentasController", "CARGAR_COMBO_PROYECTOS_FACTURA", ex);
         }
     }
 
-    private void filtrarFacturas() {
-        String texto = txtBuscarFactura.getText() == null ? "" : txtBuscarFactura.getText().trim().toLowerCase();
+    @FXML
+    private void cargarTablaFacturas(ActionEvent event) {
+        try {
+            List<Pago> lista = aplicarFiltroEstadoFactura(pagoService.listar(chkInactivosFactura.isSelected()));
+            mostrarFacturas(lista);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAGOS, "LISTAR_PAGOS", ex);
+        }
+    }
+
+    @FXML
+    private void buscarFacturas(ActionEvent event) {
+        try {
+            String criterio = txtBuscarFactura.getText();
+            List<Pago> base = (criterio == null || criterio.isBlank())
+                    ? pagoService.listar(chkInactivosFactura.isSelected())
+                    : pagoService.buscar(criterio, chkInactivosFactura.isSelected());
+            mostrarFacturas(aplicarFiltroEstadoFactura(base));
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAGOS, "BUSCAR_PAGOS", ex);
+        }
+    }
+
+    private List<Pago> aplicarFiltroEstadoFactura(List<Pago> lista) {
         String estado = cmbFiltroFactura.getValue();
-        facturasFiltradas.setPredicate(f -> {
-            boolean coincideTexto = texto.isEmpty() || f[0].toLowerCase().contains(texto)
-                    || f[1].toLowerCase().contains(texto) || f[2].toLowerCase().contains(texto);
-            boolean coincideEstado = estado == null || estado.equals("Todas") || f[5].equals(estado);
-            return coincideTexto && coincideEstado;
-        });
+        if (estado == null || "Todas".equals(estado)) {
+            return lista;
+        }
+        return lista.stream()
+                .filter(p -> estado.equalsIgnoreCase(p.getEstadoCuenta()))
+                .collect(Collectors.toList());
     }
 
-    private void actualizarResumenFacturas() {
-        double total = 0;
-        for (String[] f : facturasFiltradas) {
-            total += numero(f[4]);
-        }
-        int n = facturasFiltradas.size();
-        lblResumenFacturas.setText(n + (n == 1 ? " factura" : " facturas") + "  ·  Total facturado " + MONEDA.format(total));
+    private void mostrarFacturas(List<Pago> lista) {
+        tblFacturas.setItems(FXCollections.observableArrayList(lista));
+        BigDecimal total = lista.stream().map(Pago::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+        int n = lista.size();
+        lblResumenFacturas.setText(n + (n == 1 ? " registro" : " registros") + "  ·  Total " + MONEDA.format(total));
     }
 
     private static double numero(String texto) {
@@ -872,64 +972,134 @@ public class VentasController implements Initializable {
         lblTotal.setText(MONEDA.format(subtotal + iva));
     }
 
+    private String[] aArregloFactura(Pago p) {
+        BigDecimal total = p.getMonto();
+        BigDecimal subtotal = total.divide(new BigDecimal("1.16"), 2, RoundingMode.HALF_UP);
+        BigDecimal iva = total.subtract(subtotal);
+        LocalDate fecha = p.getFechaPago() != null ? p.getFechaPago() : LocalDate.now();
+        return new String[]{
+            p.getFolio(),
+            "PRY-" + String.format("%04d", p.getIdProyecto()),
+            p.getNombreCliente() != null ? p.getNombreCliente() : "",
+            fecha.format(FECHA),
+            MONEDA.format(total),
+            p.getEstadoCuenta() != null ? p.getEstadoCuenta() : "Pendiente",
+            p.getRfcCliente() != null ? p.getRfcCliente() : "",
+            fecha.plusDays(30).format(FECHA),
+            p.getConcepto() != null ? p.getConcepto() : p.getNombreProyecto(),
+            MONEDA.format(subtotal),
+            MONEDA.format(iva),
+            p.getMetodoPago() != null ? p.getMetodoPago() : "Transferencia"
+        };
+    }
+
     @FXML
     private void verFactura(ActionEvent event) {
-        String[] factura = tblFacturas.getSelectionModel().getSelectedItem();
-        if (factura == null) {
-            Mensajes.info("Selecciona una factura", "Elige una factura del historial para verla.");
+        Pago pago = tblFacturas.getSelectionModel().getSelectedItem();
+        if (pago == null) {
+            Mensajes.info("Selecciona una factura", "Elige un registro del historial para verlo.");
             return;
         }
-        DetalleFacturaController.abrir(factura, tblFacturas.getScene().getWindow());
+        DetalleFacturaController.abrir(aArregloFactura(pago), tblFacturas.getScene().getWindow());
     }
 
     @FXML
     private void emitirFactura(ActionEvent event) {
-        Proyecto proy = cmbProyectoFactura.getValue();
-        if (proy == null || txtImporte.getText().trim().isEmpty()) {
-            Mensajes.error("Faltan datos", "Selecciona el proyecto e indica el importe.");
+        try {
+            Pago nuevo = construirFacturaDesdeFormulario(new Pago(), "CREAR_PAGO");
+            Pago creado = pagoService.crear(nuevo);
+            cargarTablaFacturas(null);
+            limpiarFactura(null);
+            if (Mensajes.confirmar("Factura " + creado.getFolio() + " guardada en MySQL",
+                    "Total: " + MONEDA.format(creado.getMonto()) + ". Se registró en la tabla pago.\n¿Deseas ver el comprobante ahora?")) {
+                DetalleFacturaController.abrir(aArregloFactura(creado), tblFacturas.getScene().getWindow());
+            }
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAGOS, "CREAR_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void actualizarFactura(ActionEvent event) {
+        if (facturaSeleccionada == null) {
+            AlertaUtil.advertencia("Selecciona una factura", "Elige una fila de la tabla para actualizarla.");
             return;
         }
-        double subtotal = numero(txtImporte.getText());
-        if (subtotal <= 0) {
-            Mensajes.error("Importe no válido", "Escribe el importe con números, por ejemplo 86400.");
+        try {
+            Pago editado = construirFacturaDesdeFormulario(facturaSeleccionada, "ACTUALIZAR_PAGO");
+            pagoService.actualizar(editado);
+            AlertaUtil.info("Registro actualizado", "Se actualizó " + editado.getFolio() + " en MySQL.");
+            limpiarFactura(null);
+            cargarTablaFacturas(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAGOS, "ACTUALIZAR_PAGO", ex);
+        }
+    }
+
+    @FXML
+    private void eliminarFactura(ActionEvent event) {
+        Pago pago = tblFacturas.getSelectionModel().getSelectedItem();
+        if (pago == null) {
+            AlertaUtil.advertencia("Selecciona una factura", "Elige una fila de la tabla para eliminarla.");
             return;
         }
-        double iva = subtotal * 0.16;
-        String[] factura = {
-            String.format("F-%04d", siguienteFolio++),
-            "PRY-" + String.format("%04d", proy.getIdProyecto()),
-            txtClienteFactura.getText(),
-            dpEmision.getValue() == null ? "" : dpEmision.getValue().format(FECHA),
-            MONEDA.format(subtotal + iva),
-            "Pendiente",
-            txtRfcFactura.getText(),
-            dpVencimiento.getValue() == null ? "" : dpVencimiento.getValue().format(FECHA),
-            txtConcepto.getText().trim().isEmpty() ? proy.getNombreProyecto() : txtConcepto.getText().trim(),
-            MONEDA.format(subtotal),
-            MONEDA.format(iva),
-            cmbMetodoPago.getValue() == null ? "Por definir" : cmbMetodoPago.getValue()
-        };
-
-        txtBuscarFactura.clear();
-        cmbFiltroFactura.setValue(null);
-        facturas.add(0, factura);
-        tblFacturas.getSelectionModel().select(factura);
-        tblFacturas.scrollTo(0);
-        limpiarFactura(null);
-
-        if (Mensajes.confirmar("Factura " + factura[0] + " emitida",
-                "Total: " + factura[4] + ". Se guardó en el historial.\n¿Deseas verla ahora?")) {
-            DetalleFacturaController.abrir(factura, tblFacturas.getScene().getWindow());
+        if (!AlertaUtil.confirmar("Eliminar factura / pago",
+                "¿Eliminar permanentemente " + pago.getFolio() + " de la base de datos?")) {
+            return;
+        }
+        try {
+            pagoService.eliminarFisico(pago.getIdPago());
+            AlertaUtil.info("Registro eliminado", "La factura/pago fue eliminada de MySQL.");
+            limpiarFactura(null);
+            cargarTablaFacturas(null);
+        } catch (Exception ex) {
+            AlertaUtil.errorControlado(MOD_PAGOS, "ELIMINAR_FISICO_PAGO", ex);
         }
     }
 
     @FXML
     private void limpiarFactura(ActionEvent event) {
+        facturaSeleccionada = null;
+        lblModoFactura.setText("Nueva factura / pago");
         cmbProyectoFactura.setValue(null);
         txtClienteFactura.clear();
         txtRfcFactura.clear();
+        dpEmision.setValue(LocalDate.now());
+        cmbEstadoFactura.setValue("Pendiente");
         txtConcepto.clear();
         txtImporte.clear();
-        cmbMetodoPago.setValue(null);
+        cmbMetodoPago.setValue("Transferencia");
+        tblFacturas.getSelectionModel().clearSelection();
+    }
+
+    private void cargarFacturaEnFormulario(Pago p) {
+        facturaSeleccionada = p;
+        lblModoFactura.setText("Editando " + p.getFolio());
+        ComboBuscadorUtil.seleccionarPorPredicado(cmbProyectoFactura, pr -> pr.getIdProyecto() == p.getIdProyecto());
+        dpEmision.setValue(p.getFechaPago());
+        cmbEstadoFactura.setValue(p.getEstadoCuenta());
+        txtConcepto.setText(p.getConcepto() == null ? "" : p.getConcepto());
+        BigDecimal subtotal = p.getMonto().divide(new BigDecimal("1.16"), 2, RoundingMode.HALF_UP);
+        txtImporte.setText(subtotal.toPlainString());
+        cmbMetodoPago.setValue(p.getMetodoPago());
+    }
+
+    private Pago construirFacturaDesdeFormulario(Pago base, String op) throws ValidacionException {
+        Proyecto proy = cmbProyectoFactura.getValue();
+        if (proy == null) {
+            throw new ValidacionException(MOD_PAGOS, op, "Selecciona el proyecto correspondiente.");
+        }
+        BigDecimal subtotal = Validador.parsearDecimalPositivo(txtImporte.getText(), "Importe", MOD_PAGOS, op);
+        BigDecimal totalConIva = subtotal.multiply(new BigDecimal("1.16")).setScale(2, RoundingMode.HALF_UP);
+
+        base.setIdProyecto(proy.getIdProyecto());
+        base.setFechaPago(dpEmision.getValue() != null ? dpEmision.getValue() : LocalDate.now());
+        String concepto = (txtConcepto.getText() == null || txtConcepto.getText().isBlank())
+                ? proy.getNombreProyecto() : txtConcepto.getText().trim();
+        base.setConcepto(concepto);
+        base.setMonto(totalConIva);
+        base.setEstadoCuenta(cmbEstadoFactura.getValue() != null ? cmbEstadoFactura.getValue() : "Pendiente");
+        base.setMetodoPago(cmbMetodoPago.getValue() != null ? cmbMetodoPago.getValue() : "Transferencia");
+        return base;
     }
 }
